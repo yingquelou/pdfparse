@@ -1,0 +1,12 @@
+.venv
+.vscode
+build
+*.txt
+*.exe
+*.bat
+!start.bat
+lex.yy.c
+y.tab.h
+y.tab.c
+!conanfile.txt
+
