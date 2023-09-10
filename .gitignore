@@ -8,5 +8,7 @@ build
 lex.yy.c
 y.tab.h
 y.tab.c
+*~
 !conanfile.txt
-
+*.out
+target

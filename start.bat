@@ -3,7 +3,7 @@ if not defined YACC (
 )else (
 pushd pdf
 %LEX% --noline -i pdf.lex
-%YACC% -l --defines pdf.y
+@REM %YACC% -l --defines pdf.y
 popd
 )
 
