@@ -1,5 +1,11 @@
 %{
+#ifdef DEBUG
+#include "Stack/Stack.c"
+#include "List/List.c"
+#else
 #include "Stack.h"
+#include "List.h"
+#endif
 #include "PdType.h"
 static PdObj pdObjCreate(PdTypeInfo);
 static void pdfStackPush(PdObj);
@@ -7,52 +13,45 @@ static long fileLeng,curPos;
 StackL pdfStack;
 %}
 
-LB \[
-RB \]
+LA \[
+RA \]
 LD "<<"
 RD ">>"
-LA \<
-RA \>
 string \(.*\)
 d [0-9]
 w [0-9a-zA-Z]
 xd [0-9A-Fa-f]
-f {d}*\.{d}+
+f [+-]?{d}*\.{d}+
 space " "
 EOL (\r\n|\n)
 keyword obj|endobj|stream|trailer|R|null|endstream|xref|startxref|f|n
-name \/[^ ]+
+name \/[^ \n]+
 
 %%
 
 %.*$ {}
 {space} {}
 {string} {
-    // fprintf(yyout,"string: %s\n",yytext);
-    fprintf(yyout,"%s",yytext);
+    pdfStackPush(pdObjCreate(pdTypeString));
+}
+\<{xd}*\> {
+	pdfStackPush(pdObjCreate(pdTypeString));
 }
 {keyword} {
     // fprintf(yyout,"keyword: %s\n",yytext);
     fprintf(yyout,"%s",yytext);
 }
+true|false {
+	pdfStackPush(pdObjCreate(pdTypeBoolean));
+}
 {EOL} {
 	// fprintf(yyout,"EOL\n");
 	fprintf(yyout,"\n");
 }
-{LB} {
-    // fprintf(yyout,"LP: %s\n",yytext);
-    fprintf(yyout,"%s",yytext);
-}
-{RB} {
-    // fprintf(yyout,"LP: %s\n",yytext);
-    fprintf(yyout,"%s",yytext);
-}
 {LD} {
-    // fprintf(yyout,"LD: %s\n",yytext);
 	pdfStackPush(pdObjCreate(pdOperateLD));
 }
 {RD} {
-    // fprintf(yyout,"RD: %s\n",yytext);
 	pdfStackPush(pdObjCreate(pdOperateRD));
 }
 {LA} {
@@ -64,7 +63,6 @@ name \/[^ ]+
     fprintf(yyout,"%s",yytext);
 }
 {d}+   {
-    // fprintf(yyout,"integer: %s\n",yytext);
 	pdfStackPush(pdObjCreate(pdTypeInteger));
 }
 {xd}+ {
@@ -72,17 +70,15 @@ name \/[^ ]+
     fprintf(yyout,"%s",yytext);
 }
 {f}     {
-    // fprintf(yyout,"float: %s\n",yytext);
-    fprintf(yyout,"%s ",yytext);
+	pdfStackPush(pdObjCreate(pdTypeReal));
 }
 
 {name} {
-    // fprintf(yyout,"name: %s\n",yytext);
-    fprintf(yyout,"%s ",yytext);
+ 	pdfStackPush(pdObjCreate(pdTypeName));
 }
 
 . {
-    //fprintf(stdout,"%s\n",yytext);
+    fprintf(stdout,"None: %s\n",yytext);
 }
 %%
 int yywrap()
@@ -103,7 +99,6 @@ static void *pdExtra(void *entry, void *obj)
 {
 	*(PdDictionaryEntry *)entry = obj;
 }
-#include "List.h"
 static void pdForOperateRD()
 {
 	PdDictionary dict = malloc(sizeof(pdDictionary));
@@ -133,7 +128,7 @@ static void pdForOperateRD()
 }
 static void pdfStackPush(PdObj obj)
 {
-	if (obj && obj->obj)
+	if (obj)
 		switch (obj->typeInfo)
 		{
 		case pdTypeBoolean:
@@ -141,7 +136,6 @@ static void pdfStackPush(PdObj obj)
 		case pdTypeReal:
 		case pdTypeString:
 		case pdTypeName:
-		case pdOperateLS:
 		case pdOperateLA:
 		case pdOperateLD:
 			StackLPush(&pdfStack, obj);
@@ -153,8 +147,6 @@ static void pdfStackPush(PdObj obj)
 		case pdOperateRA:
 			// StackLPop(pdfStack);
 			break;
-		case pdOperateRS:
-		case pdTypeArray:
 		default:
 			fprintf(stderr, "The Type is undefined!\n");
 			break;
@@ -190,13 +182,31 @@ static PdObj pdObjCreate(PdTypeInfo typeInfo)
 		obj->typeInfo = pdTypeReal;
 	}
 		return obj;
-	case pdOperateLD:
-		obj->obj = pdnull;
-		obj->typeInfo = pdOperateLD;
+	case pdTypeString:
+	{
+		PdString str = malloc(sizeof(pdString));
+		str->length = yyleng - 2;
+		str->str = malloc(yyleng - 1);
+		memcpy(str->str, yytext + 1, yyleng - 2);
+		str->str[yyleng - 3] = '\0';
+		str->isHex = (yytext[0] == '(' ? false : true);
+		obj->obj = str;
+		obj->typeInfo = pdTypeString;
+	}
 		return obj;
+	case pdTypeName:
+	{
+		PdName name = malloc(yyleng);
+		memcpy(name, yytext + 1, yyleng - 1);
+		name[yyleng - 1] = '\0';
+		obj->obj = name;
+		obj->typeInfo = typeInfo;
+	}
+		return obj;
+	case pdOperateLD:
 	case pdOperateRD:
 		obj->obj = pdnull;
-		obj->typeInfo = pdOperateRD;
+		obj->typeInfo = typeInfo;
 		return obj;
 	default:
 		fprintf(stderr, "The Type is undefined!\n");
@@ -210,7 +220,6 @@ StackL pdfParse(const char *pdfPath)
 	fileLeng = ftell(yyin);
 	curPos = 0;
 	rewind(yyin);
-	printf("%p\n", yyin);
 	yylex();
 	return pdfStack;
 }

@@ -19,8 +19,6 @@ typedef enum pdTypeInfo
     pdTypeObjsXrefNum,
 
     /* 操作符 */
-    pdOperateLS,
-    pdOperateRS,
     pdOperateLA,
     pdOperateRA,
     pdOperateLD,
