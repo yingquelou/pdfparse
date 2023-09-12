@@ -15,6 +15,6 @@ int main(int argc, char const *argv[])
     StackL stack = pdfParse("E:\\code\\pythonProjects\\conanTest\\test.txt");
     StackLForeach(&stack, print);
     StackLDestroy(&stack);
-    puts("sfsd");
+    fputs("sfsd",stderr);
     return 0;
 }

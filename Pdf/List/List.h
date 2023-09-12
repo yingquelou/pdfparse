@@ -8,11 +8,18 @@ typedef struct node
     // 这是一个指针,指向需要保存元素
     void *Date;
     struct node *Next;
-} Node, *List;
+} Node;
+typedef struct list
+{
+    Node *head;
+    Node *last;
+    size_t length;
+} List;
+
 // 创建链表
 extern List *listCreate();
 // 检查链表是否为空
-extern bool listIsEmpty(List *);
+extern bool listIsEmpty(const List *);
 // 返回链表最后一个节点
 extern Node *listLastNode(List *);
 // 为放置给定数据项创建一个节点
@@ -21,9 +28,7 @@ extern Node *nodeCreate(const void *);
 extern bool listPush(List *, const void *);
 typedef void *(*Func)(void *, void *);
 // 对链表中的每一个数据项执行某种操作
-extern void listForeach(List *, Func,void*);
-// 第二个参数表示如何对单个元素进行拷贝的方法
-extern List listCopy(List *, Func);
+extern void listForeach(List *, Func, void *);
 /**
  * \brief 销毁链表
  * 注意:当链表中的数据项是动态分配时,则在调用本函数之前,
@@ -37,5 +42,7 @@ typedef int (*Comparator)(const void *, const void *);
 // 快速排序——当链表长度不足2或比较子为NULL时,什么都不做
 extern void listQsort(List *, const Comparator);
 // 链表合并——当存在空表或比较子为NULL时,什么都不做
-extern List listMerge(List *, List *, const Comparator);
+extern List *listMerge(List *, List *, const Comparator);
+// 反转链表
+extern void listReverse(List *list);
 #endif

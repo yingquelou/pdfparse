@@ -4,21 +4,17 @@ List *listCreate()
 {
     return calloc(1, sizeof(List));
 }
-bool listIsEmpty(List *pl)
+bool listIsEmpty(const List *pl)
 {
-    return pl ? (*pl ? false : true) : true;
+    if (pl && pl->head)
+        return false;
+    return true;
 }
 Node *listLastNode(List *pl)
 {
-    if (!pl)
+    if (listIsEmpty(pl))
         return NULL;
-    Node *cur = *pl, *last = NULL;
-    while (cur)
-    {
-        last = cur;
-        cur = cur->Next;
-    }
-    return last;
+    return pl->last;
 }
 Node *nodeCreate(const void *Data)
 {
@@ -37,18 +33,25 @@ bool listPush(List *pl, const void *Data)
     Node *cur = nodeCreate(Data);
     if (!cur)
         return false;
-    Node *last = listLastNode(pl);
-    if (last)
-        last->Next = cur;
+    if (pl->head)
+    {
+        pl->last->Next = cur;
+        pl->last = cur;
+        ++(pl->length);
+    }
     else
-        *pl = cur;
+    {
+        pl->head = cur;
+        pl->last = cur;
+        pl->length = 1;
+    }
     return true;
 }
 void listForeach(List *pl, Func fun, void *funArgs)
 {
     if (!pl || !fun)
         return;
-    Node *cur = *pl;
+    Node *cur = pl->head;
     while (cur)
     {
         fun(funArgs, cur->Date);
@@ -59,27 +62,22 @@ void listDestroy(List *pl)
 {
     if (!pl)
         return;
-    Node *cur = *pl, *tmp = NULL;
+    Node *cur = pl->head, *tmp = NULL;
     while (cur)
     {
         tmp = cur;
         cur = cur->Next;
         free(tmp);
     }
-    *pl = NULL;
+    pl->head = NULL;
+    pl->last = NULL;
+    pl->length = 0;
 }
 size_t listLength(const List *pl)
 {
-    if (!pl)
+    if (listIsEmpty(pl))
         return 0;
-    Node *cur = *pl;
-    size_t lg = 0;
-    while (cur)
-    {
-        ++lg;
-        cur = cur->Next;
-    }
-    return lg;
+    return pl->length;
 }
 void listQsort(List *pl, const Comparator cmp)
 {
@@ -89,50 +87,36 @@ void listQsort(List *pl, const Comparator cmp)
     void **arr = malloc(sizeof(void *) * lg);
     size_t i;
     Node *cur;
-    for (i = 0, cur = *pl; cur; ++i, cur = cur->Next)
+    for (i = 0, cur = pl->head; cur; ++i, cur = cur->Next)
         arr[i] = cur->Date;
     qsort(arr, lg, sizeof(void *), cmp);
-    for (i = 0, cur = *pl; cur; ++i, cur = cur->Next)
+    for (i = 0, cur = pl->head; cur; ++i, cur = cur->Next)
         cur->Date = arr[i];
     free(arr);
 }
-static void *dataDestroy(void *data,void*no)
-{
-    return free(data), NULL;
-}
-List listCopy(List *pl, Func copy)
-{
-    if (!copy || listIsEmpty(pl))
-        return NULL;
-    Node *curs = *pl, *pNode = NULL, **lcp = listCreate(), *curc = NULL;
-    void *Data = NULL;
-    do
-    {
-        if ((Data = copy(curs->Date,NULL)) && (pNode = nodeCreate(Data)))
-        {
-            if (*lcp)
-                curc->Next = pNode;
-            else
-                *lcp = pNode;
-            curc = pNode;
-            curs = curs->Next;
-        }
-        else
-        {
-            listForeach(lcp, dataDestroy, NULL);
-            listDestroy(lcp);
-            return NULL;
-        }
-    } while (curs);
-    curc = *lcp;
-    free(lcp);
-    return curc;
-}
-List listMerge(List *first, List *second, const Comparator cmp)
+List *listMerge(List *first, List *second, const Comparator cmp)
 {
     if (listIsEmpty(first) || listIsEmpty(second) || !cmp)
         return NULL;
-    listLastNode(first)->Next = *second;
+    listLastNode(first)->Next = second->head;
     listQsort(first, cmp);
-    return *first;
+    second->head = NULL;
+    second->last = NULL;
+    second->length = 0;
+    return first;
+}
+void listReverse(List *list)
+{
+    if (listIsEmpty(list))
+        return;
+    Node *dest = NULL, *moved = NULL, *source = list->head;
+    list->last = source;
+    while (source)
+    {
+        moved = source;
+        source = source->Next;
+        moved->Next = dest;
+        dest = moved;
+    }
+    list->last->Next = NULL;
 }

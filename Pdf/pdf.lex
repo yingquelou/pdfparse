@@ -55,12 +55,10 @@ true|false {
 	pdfStackPush(pdObjCreate(pdOperateRD));
 }
 {LA} {
-    // fprintf(yyout,"LA: %s\n",yytext);
-    fprintf(yyout,"%s",yytext);
+	pdfStackPush(pdObjCreate(pdOperateLA));
 }
 {RA} {
-    // fprintf(yyout,"RA: %s\n",yytext);
-    fprintf(yyout,"%s",yytext);
+	pdfStackPush(pdObjCreate(pdOperateRA));
 }
 {d}+   {
 	pdfStackPush(pdObjCreate(pdTypeInteger));
@@ -117,14 +115,40 @@ static void pdForOperateRD()
 	dict->size = size;
 	dict->entries = malloc(sizeof(PdDictionaryEntry) * size);
 	for (size_t i = 0; i < size; ++i)
-	{
 		listForeach(list, pdExtra, dict->entries + i);
-	}
 	listDestroy(list);
+	free(list);
 	obj = malloc(sizeof(pdObj));
 	obj->obj = dict;
 	obj->typeInfo = pdTypeDictionary;
 	StackLPush(&pdfStack, obj);
+}
+static void *pdExtraArray(void *none, void *obj)
+{
+	return free(obj), NULL;
+}
+static void pdForOperateRA()
+{
+	PdArray arr = malloc(sizeof(pdArray));
+	arr->arr;
+	List *list = listCreate();
+	PdObj obj = NULL;
+	while ((obj = StackLPop(&pdfStack)) && obj->typeInfo != pdOperateLA)
+		listPush(list, obj);
+	free(obj);
+	arr->size = list->length;
+	arr->arr = malloc(sizeof(pdObj) * arr->size);
+	size_t i = 0;
+	for (Node *cur = list->head; cur; cur = cur->Next)
+	{
+		arr->arr[i++] = *(PdObj)(cur->Date);
+	}
+	listForeach(list, pdExtraArray, NULL);
+	listDestroy(list);
+	free(list);
+	obj->obj = arr;
+	obj->typeInfo = pdTypeArray;
+	StackLPush(&pdfStack,obj);
 }
 static void pdfStackPush(PdObj obj)
 {
@@ -145,7 +169,8 @@ static void pdfStackPush(PdObj obj)
 			free(obj);
 			break;
 		case pdOperateRA:
-			// StackLPop(pdfStack);
+			pdForOperateRA();
+			free(obj);
 			break;
 		default:
 			fprintf(stderr, "The Type is undefined!\n");
@@ -203,6 +228,8 @@ static PdObj pdObjCreate(PdTypeInfo typeInfo)
 		obj->typeInfo = typeInfo;
 	}
 		return obj;
+	case pdOperateLA:
+	case pdOperateRA:
 	case pdOperateLD:
 	case pdOperateRD:
 		obj->obj = pdnull;
