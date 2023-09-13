@@ -25,12 +25,24 @@ f [+-]?{d}*\.{d}+
 space " "
 EOL (\r\n|\n)
 keyword obj|endobj|stream|trailer|R|null|endstream|xref|startxref|f|n
-name \/[^ \n]+
+name \/[^ \r\n]+
 
 %%
 
 %.*$ {}
 {space} {}
+true|false {
+	pdfStackPush(pdObjCreate(pdTypeBoolean));
+}
+{d}+   {
+	pdfStackPush(pdObjCreate(pdTypeInteger));
+}
+{f}     {
+	pdfStackPush(pdObjCreate(pdTypeReal));
+}
+{name} {
+ 	pdfStackPush(pdObjCreate(pdTypeName));
+}
 {string} {
     pdfStackPush(pdObjCreate(pdTypeString));
 }
@@ -38,16 +50,9 @@ name \/[^ \n]+
 	pdfStackPush(pdObjCreate(pdTypeString));
 }
 {keyword} {
-    // fprintf(yyout,"keyword: %s\n",yytext);
-    fprintf(yyout,"%s",yytext);
+    fprintf(yyout,"keyword: %s\n",yytext);
 }
-true|false {
-	pdfStackPush(pdObjCreate(pdTypeBoolean));
-}
-{EOL} {
-	// fprintf(yyout,"EOL\n");
-	fprintf(yyout,"\n");
-}
+
 {LD} {
 	pdfStackPush(pdObjCreate(pdOperateLD));
 }
@@ -60,23 +65,12 @@ true|false {
 {RA} {
 	pdfStackPush(pdObjCreate(pdOperateRA));
 }
-{d}+   {
-	pdfStackPush(pdObjCreate(pdTypeInteger));
-}
-{xd}+ {
- 	// fprintf(yyout,"xd: %s\n",yytext);
-    fprintf(yyout,"%s",yytext);
-}
-{f}     {
-	pdfStackPush(pdObjCreate(pdTypeReal));
-}
-
-{name} {
- 	pdfStackPush(pdObjCreate(pdTypeName));
+{EOL} {
+	fprintf(yyout,"EOL\n");
 }
 
 . {
-    fprintf(stdout,"None: %s\n",yytext);
+    fprintf(yyout,"None: %s\n",yytext);
 }
 %%
 int yywrap()
@@ -89,7 +83,6 @@ int yywrap()
 	{
 		fclose(yyin);
 		fclose(yyout);
-		puts("OK");
 		return (1);
 	}
 }
@@ -246,6 +239,7 @@ StackL pdfParse(const char *pdfPath)
 	fseek(yyin, 0, SEEK_END);
 	fileLeng = ftell(yyin);
 	curPos = 0;
+	yyout=fopen("rest.txt","w");
 	rewind(yyin);
 	yylex();
 	return pdfStack;
