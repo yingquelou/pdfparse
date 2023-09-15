@@ -1,6 +1,11 @@
 #ifndef PDTYPE_H
 #define PDTYPE_H 1
 #include <stdbool.h>
+#ifndef DEBUG 
+#include "List/listd.h"
+#else
+#include "listd.h"
+#endif
 typedef enum pdTypeInfo
 {
     /* 操作数 */
@@ -31,7 +36,7 @@ typedef bool pdBoolean, *PdBoolean;
 // base type - Integer
 typedef long long pdInteger, *PdInteger;
 // base type - Real numbers
-typedef long double pdReal, *PdReal;
+typedef double pdReal, *PdReal;
 #include <stdio.h>
 // base type - strings
 typedef struct pdString
@@ -71,28 +76,18 @@ typedef struct pdObjs
 {
     // 当前对象在交叉引用表的编号信息
     pdObjsXrefNum xrefNum;
-    // 持有当前对象的所有
-    // 内嵌对象
-    PdObj objs;
-    // 内嵌对象的数量
-    size_t num;
+    // 持有当前对象的所有内嵌对象
+    ListD objList;
 } pdObjs, *PdObjs;
-typedef struct pdArray
-{
-    size_t size;
-    PdObj arr;
-} pdArray, *PdArray;
+
 typedef struct pdDictionaryEntry
 {
     PdObj key;
     PdObj value;
 } pdDictionaryEntry, *PdDictionaryEntry;
-
-typedef struct pdDictionary
-{
-    size_t size;
-    PdDictionaryEntry *entries;
-} pdDictionary, *PdDictionary;
+// 字典条目类型为PdDictionaryEntry
+// 数组元素类型为PdObj
+typedef ListDNode pdDictionary, *PdDictionary, pdArray, *PdArray;
 /* 流对象
  * Key|Type|Value
  * -|-|-
