@@ -13,13 +13,14 @@ w [0-9a-zA-Z]
 xd [0-9A-Fa-f]
 f [+-]?{d}*\.{d}+
 space " "
-EOL (\r\n|\n)
+EOL \r?\n
 keyword obj|endobj|stream|trailer|R|endstream|xref|startxref|f|n
 name \/[^ \r\n]+
 
 %%
 
 %.*$ {}
+{EOL} {}
 {space} {}
 true {
 	yylval.boolean=malloc(sizeof(pdBoolean));
@@ -83,8 +84,7 @@ false {
 null {
 	return PDNULL;
 }
-{EOL} {
-}
+
 
 %%
 int yywrap()

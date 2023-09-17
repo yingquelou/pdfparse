@@ -11,4 +11,7 @@ y.tab.c
 *~
 !conanfile.txt
 *.out
+*.output
 target
+*.dot
+*.dot

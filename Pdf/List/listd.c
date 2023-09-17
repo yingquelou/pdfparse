@@ -1,19 +1,6 @@
 #include "listd.h"
 #include <stdio.h>
 #include <stdlib.h>
-ListD listDCreate(void)
-{
-	ListD ret;
-	if (ret = malloc(sizeof(ListDNode)))
-	{
-		ret->data = NULL;
-		ret->prev = NULL;
-		ret->next = NULL;
-		return ret;
-	}
-	else
-		return NULL;
-}
 ListDNode *listDBegin(ListDNode *node)
 {
 	ListDNode *begin = NULL;
@@ -36,44 +23,37 @@ ListDNode *listDEnd(ListDNode *node)
 }
 ListDNode *listDInsertAfterNode(ListDNode *node, void *d)
 {
-	if (node && d)
+	ListDNode *cur = malloc(sizeof(ListDNode));
+	cur->data = d;
+	if (node)
 	{
-		if (node->data)
-		{
-			ListDNode *cur = malloc(sizeof(ListDNode));
-			cur->data = d;
-			cur->next = node->next;
-			cur->prev = node;
+		cur->next = node->next;
+		cur->prev = node;
 
-			node->next = cur;
-			if (cur->next)
-				cur->next->prev = cur;
-			return cur;
-		}
-		else
-		{
-			node->data = d;
-			return node;
-		}
+		node->next = cur;
+
+		if (cur->next)
+			cur->next->prev = cur;
 	}
-	return NULL;
+	else
+	{
+		cur->next = NULL;
+		cur->prev = NULL;
+	}
+	return cur;
 }
 ListDNode *listDInsertBeforeNode(ListDNode *node, void *d)
 {
 	if (!node)
-		return NULL;
-	ListDNode *front = node->prev;
-	if (front)
-		return listDInsertAfterNode(front, d);
-	if (front = malloc(sizeof(ListDNode)))
+		return listDInsertAfterNode(NULL, d);
+	if (node->prev)
+		return listDInsertAfterNode(node->prev, d);
+	else
 	{
-		front->prev = NULL;
-		front->data = d;
-		front->next = node;
-		node->prev = front;
-		return front;
+		node->prev = listDInsertAfterNode(NULL, d);
+		node->prev->next = node;
+		return node->prev;
 	}
-	return NULL;
 }
 ListDNode *listDPushBack(ListD head, void *d)
 {

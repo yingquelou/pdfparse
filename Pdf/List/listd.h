@@ -10,20 +10,25 @@ typedef struct node
 	struct node *next;
 	// 以上三个指针都应指向动态分配的对象
 } *ListD, ListDNode;
-// 以`D`为后缀的是双向链表版本,下同
-extern ListD listDCreate(void);
 // 链表存在的话返回其首节点，否则返回空指针
 ListDNode *listDBegin(ListDNode *);
 // 链表存在的话返回其尾结点，否则返回空指针
 extern ListDNode *listDEnd(ListDNode *);
-//
 /**
- * \brief 在某个有效结点之后插入一个新的结点用于放置某个有效数据
- *
- * \return  成功返回该新节点,否则返回NULL
- * \date by yingquelou at 2023-09-14 20:10:19
+ * \brief 在链表某个结点之后插入一个新的结点用于放置某个数据
+ * \param node 当参数为NULL时,函数等同于创建一个节点(也可以认为是只含有首元节点的新链表)
+ * \param d 指向待插入的数据
+ * \return 新的结点
+ * \date by yingquelou at 2023-09-17 10:38:23
  */
-extern ListDNode *listDInsertAfterNode(ListDNode *, void *);
+extern ListDNode *listDInsertAfterNode(ListDNode *node, void *d);
+/**
+ * \brief 在链表某个结点之前插入一个新的结点用于放置某个数据
+ * \param node 当参数为NULL时,函数等同于创建一个节点(也可以认为是只含有首元节点的新链表)
+ * \param d 指向待插入的数据
+ * \return 新的结点
+ * \date by yingquelou at 2023-09-17 10:38:23
+ */
 extern ListDNode *listDInsertBeforeNode(ListDNode *node, void *d);
 /**
  * \brief 在链表末尾插入一个新的结点用于放置某个有效数据

@@ -8,13 +8,10 @@ int yyerror(char *s);
 #endif
 #include "lex.yy.c"
 #include<stdio.h>
-int print(void *x, void *y)
-{
-    PdObj obj = (PdObj)x;
-    printf("$d\t",obj->typeInfo);
-    return 0;
-}
+extern int yydebug;
+int print(void*,void*);
 %}
+
 %union{
     PdBoolean boolean;
     PdInteger integer;
@@ -32,32 +29,18 @@ int print(void *x, void *y)
 %token LD RD PDNULL
 %type <list> OBJLIST ARRAY ENTRYSET DICTIONARY
 %type <obj> KEY OBJ BASEOBJ
-
+%start test
 %% 
-test:OBJLIST{
- listDForEach($1,print,NULL);
-};
-OBJLIST: {$$=listDCreate();}
+test: OBJLIST {listDForEach($1,print,NULL);};
+
+OBJLIST: {$$=pdnull;}
 |OBJLIST OBJ {$$=listDPushBack($1,$2);}
 ;
-OBJ:KEY {$$=$1;}
-|PDNULL {$$=pdnull;}
-;
-ARRAY: '[' OBJLIST ']' {$$=$2;}
-        ;
-DICTIONARY: LD ENTRYSET RD {
-    $$=$2;
-}
-;
-ENTRYSET:{$$=listDCreate();}
-|ENTRYSET KEY OBJ {
-    PdDictionaryEntry entry=malloc(sizeof(pdDictionaryEntry));
-    entry->key=$2;
-    entry->value=$3;
-    $$=listDPushBack($1,entry);
-}
-;
-KEY:BASEOBJ 
+
+OBJ:PDNULL {$$=pdnull;}
+|KEY {$$=$1;}
+; 
+KEY:BASEOBJ {$$=$1;}
 |ARRAY{
 $$=malloc(sizeof(pdObj));
 $$->typeInfo=pdTypeArray;
@@ -69,6 +52,7 @@ $$->typeInfo=pdTypeDictionary;
 $$->obj=$1;
 }
 ;
+
 BASEOBJ :BOOLEAN {
 $$=malloc(sizeof(pdObj));
 $$->typeInfo=pdTypeBoolean;
@@ -95,6 +79,23 @@ $$->typeInfo=pdTypeName;
 $$->obj=$1;
 }
 ;
+ARRAY: '[' OBJLIST ']' {$$=$2;}
+        ;
+
+DICTIONARY: LD ENTRYSET RD {
+    $$=$2;
+}
+;
+ENTRYSET:{$$=pdnull;}
+|ENTRYSET KEY OBJ {
+    PdDictionaryEntry entry=malloc(sizeof(pdDictionaryEntry));
+    entry->key=$2;
+    entry->value=$3;
+    $$=listDPushBack($1,entry);
+}
+;
+
+
 %%
 
 int yyerror(char *s)
@@ -104,7 +105,16 @@ int yyerror(char *s)
 }       
 int main(int argc, char const *argv[])
 {
-    yyin=fopen("E:\\code\\pythonProjects\\conanTest\\rest.txt","rb");
-  yyparse();
-  return 0;
+    yydebug=1;
+    yyin=fopen("E:\\code\\pythonProjects\\conanTest\\test.txt","rb");
+    yyout=fopen("E:\\code\\pythonProjects\\conanTest\\rest.txt","w");
+    yyparse();
+    return 0;
+}
+int print(void*x,void*y){
+    if(x)
+ fprintf(yyout,"%d\n",((PdObj)x)->typeInfo);
+ else
+ fprintf(yyout,"null\n");
+ return 0;
 }
