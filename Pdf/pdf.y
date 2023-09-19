@@ -28,7 +28,7 @@ int print(void*,void*);
 %token <name> NAME
 %token LD RD PDNULL
 %type <list> OBJLIST ARRAY ENTRYSET DICTIONARY
-%type <obj> KEY OBJ BASEOBJ
+%type <obj> KEY OBJ
 %start test
 %% 
 test: OBJLIST {listDForEach($1,print,NULL);};
@@ -40,20 +40,8 @@ OBJLIST: {$$=pdnull;}
 OBJ:PDNULL {$$=pdnull;}
 |KEY {$$=$1;}
 ; 
-KEY:BASEOBJ {$$=$1;}
-|ARRAY{
-$$=malloc(sizeof(pdObj));
-$$->typeInfo=pdTypeArray;
-$$->obj=$1;
-}
-|DICTIONARY{
-$$=malloc(sizeof(pdObj));
-$$->typeInfo=pdTypeDictionary;
-$$->obj=$1;
-}
-;
 
-BASEOBJ :BOOLEAN {
+KEY:BOOLEAN {
 $$=malloc(sizeof(pdObj));
 $$->typeInfo=pdTypeBoolean;
 $$->obj=$1;
@@ -76,6 +64,16 @@ $$->obj=$1;
 |NAME{
 $$=malloc(sizeof(pdObj));
 $$->typeInfo=pdTypeName;
+$$->obj=$1;
+}
+|ARRAY{
+$$=malloc(sizeof(pdObj));
+$$->typeInfo=pdTypeArray;
+$$->obj=$1;
+}
+|DICTIONARY{
+$$=malloc(sizeof(pdObj));
+$$->typeInfo=pdTypeDictionary;
 $$->obj=$1;
 }
 ;

@@ -3,6 +3,6 @@ if not defined YACC (
 )
 pushd pdf
 %LEX% --noline -i pdf.lex
-%YACC% -l -d -v --debug -g pdf.y
+%YACC% -l -v --defines --debug -g pdf.y
 popd
 
