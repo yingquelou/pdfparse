@@ -1,7 +1,8 @@
-#include<stdio.h>
-#include<stdlib.h>
+#include <stdio.h>
+#include <stdlib.h>
 int main(int argc, char const *argv[])
 {
-    printf("%s:%d",__FILE__,__LINE__);
+    char str[] = "1234 3452", *pos;
+    printf("%d\n", strtoll(str, NULL, 10));
     return 0;
 }

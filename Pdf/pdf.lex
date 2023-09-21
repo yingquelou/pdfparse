@@ -1,6 +1,10 @@
 %{
-#include "PdType.h"
+#include "..\\Pdocument.h"
+#ifdef YACCHEADFILE
+#include YACCHEADFILE
+#else
 #include"y.tab.h"
+#endif
 %}
 
 LA \[
@@ -12,9 +16,12 @@ d [0-9]
 w [0-9a-zA-Z]
 xd [0-9A-Fa-f]
 f [+-]?{d}*\.{d}+
+OBJ {INT}{space}+{INT}{space}+obj
+INDIRECTOBJREF {INT}{space}+{INT}{space}+R
+INT {d}+
 space " "
 EOL \r?\n
-keyword obj|endobj|stream|trailer|R|endstream|xref|startxref|f|n
+keyword stream|trailer|endstream|xref|startxref|f|n
 name \/[^ \r\n]+
 
 %%
@@ -32,7 +39,8 @@ false {
 	*(yylval.boolean)=false;
 	return BOOLEAN;
 }
-{d}+   {
+
+{INT}   {
 	yylval.integer=malloc(sizeof(pdInteger));
 	*(yylval.integer)=atoll(yytext);
 	return INTEGER;
@@ -66,7 +74,20 @@ false {
 	yylval.string->str[yyleng-3]='\0';
 	return STRING;
 }
-{keyword} {
+{OBJ} {
+	char*textpos;
+	yylval.objnum.first=strtoll(yytext,&textpos,10);
+	yylval.objnum.second=strtoll(textpos,NULL,10);
+	return OBJ;
+}
+{INDIRECTOBJREF} {
+	char*textpos;
+	yylval.objnum.first=strtoll(yytext,&textpos,10);
+	yylval.objnum.second=strtoll(textpos,NULL,10);
+	return INDIRECTOBJREF;
+}
+endobj {
+	return ENDOBJ;
 }
 
 {LD} {
@@ -85,6 +106,8 @@ null {
 	return PDNULL;
 }
 
+{keyword} {
+}
 
 %%
 int yywrap()

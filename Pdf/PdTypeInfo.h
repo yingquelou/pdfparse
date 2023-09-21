@@ -15,6 +15,7 @@ typedef enum pdTypeInfo
     pdTypeArray,
     pdTypeDictionary,
     pdTypeIndirectObj,
+    pdTypeIndirectObjRef,
 
     pdTypeStream,
     pdTypeObjsXrefNum,

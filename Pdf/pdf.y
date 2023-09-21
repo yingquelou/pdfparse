@@ -1,12 +1,11 @@
 %{
 int yyerror(char *s);
-#include "PdType.h"
+#include "..\\Pdocument.h"
 #ifndef DEBUG 
-#include "List/listd.c"
+#include "..\\List\\listd.c"
 #else
 #include "listd.h"
 #endif
-#include "lex.yy.c"
 #include<stdio.h>
 extern int yydebug;
 int print(void*,void*);
@@ -20,28 +19,57 @@ int print(void*,void*);
     PdName name;
     ListD list;
     PdObj obj;
+    PdIndirectObj indirectObj;
+    struct {long long first;long long second;}objnum;
 }
 %token <boolean> BOOLEAN
 %token <integer> INTEGER
 %token <real> REAL
 %token <string> STRING
 %token <name> NAME
-%token LD RD PDNULL
+%token <objnum> OBJ INDIRECTOBJREF
+%token LD RD PDNULL ENDOBJ
 %type <list> OBJLIST ARRAY ENTRYSET DICTIONARY
-%type <obj> KEY OBJ
+%type <obj> KEY OBJREF BASEOBJ
+%type <indirectObj> INDIRECTOBJ
 %start test
 %% 
 test: OBJLIST {listDForEach($1,print,NULL);};
 
 OBJLIST: {$$=pdnull;}
-|OBJLIST OBJ {$$=listDPushBack($1,$2);}
+|OBJLIST OBJREF {$$=listDPushBack($1,$2);}
 ;
 
-OBJ:PDNULL {$$=pdnull;}
+OBJREF:PDNULL {$$=pdnull;}
 |KEY {$$=$1;}
+|INDIRECTOBJ{
+$$=malloc(sizeof(pdObj));
+$$->typeInfo=pdTypeIndirectObj;
+$$->obj=$1;
+}
 ; 
+KEY:BASEOBJ {$$=$1;}
+|INDIRECTOBJREF{
+$$=malloc(sizeof(pdObj));
+$$->typeInfo=pdTypeIndirectObjRef;
+pdIndirectObjRef*ref=malloc(sizeof(pdIndirectObjRef));
+ref->id=$1.first;
+ref->generation=$1.second;
+$$->obj=ref;
+}
+|ARRAY{
+$$=malloc(sizeof(pdObj));
+$$->typeInfo=pdTypeArray;
+$$->obj=$1;
+}
+|DICTIONARY{
+$$=malloc(sizeof(pdObj));
+$$->typeInfo=pdTypeDictionary;
+$$->obj=$1;
+}
+;
 
-KEY:BOOLEAN {
+BASEOBJ :BOOLEAN {
 $$=malloc(sizeof(pdObj));
 $$->typeInfo=pdTypeBoolean;
 $$->obj=$1;
@@ -66,16 +94,6 @@ $$=malloc(sizeof(pdObj));
 $$->typeInfo=pdTypeName;
 $$->obj=$1;
 }
-|ARRAY{
-$$=malloc(sizeof(pdObj));
-$$->typeInfo=pdTypeArray;
-$$->obj=$1;
-}
-|DICTIONARY{
-$$=malloc(sizeof(pdObj));
-$$->typeInfo=pdTypeDictionary;
-$$->obj=$1;
-}
 ;
 ARRAY: '[' OBJLIST ']' {$$=$2;}
         ;
@@ -85,7 +103,7 @@ DICTIONARY: LD ENTRYSET RD {
 }
 ;
 ENTRYSET:{$$=pdnull;}
-|ENTRYSET KEY OBJ {
+|ENTRYSET KEY OBJREF {
     PdDictionaryEntry entry=malloc(sizeof(pdDictionaryEntry));
     entry->key=$2;
     entry->value=$3;
@@ -93,6 +111,13 @@ ENTRYSET:{$$=pdnull;}
 }
 ;
 
+INDIRECTOBJ:OBJ[num] OBJLIST[objList] ENDOBJ {
+    $$=malloc(sizeof(pdIndirectObj));
+    $$->id=$num.first;
+    $$->generation=$num.second;
+    $$->objList=$objList;
+}
+;
 
 %%
 

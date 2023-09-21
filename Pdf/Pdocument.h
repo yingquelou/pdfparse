@@ -10,11 +10,16 @@
 typedef struct pdIndirectObj
 {
     // 当前对象在交叉引用表的编号信息
-    PdInteger id;
-    PdInteger generation;
+    long long id;
+    long long generation;
     // 持有当前对象的所有内嵌对象
     ListD objList;
 } pdIndirectObj, *PdIndirectObj;
+typedef struct pdIndirectObjRef
+{
+    long long id;
+    long long generation;
+} pdIndirectObjRef, *PdIndirectObjRef;
 /* 流对象
  * Key|Type|Value
  * -|-|-
