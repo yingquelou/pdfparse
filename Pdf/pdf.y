@@ -28,7 +28,7 @@ int print(void*,void*);
 %token <string> STRING
 %token <name> NAME
 %token <objnum> OBJ INDIRECTOBJREF
-%token LD RD PDNULL ENDOBJ
+%token LD RD PDNULL ENDOBJ STREAM ENDSTREAM
 %type <list> OBJLIST ARRAY ENTRYSET DICTIONARY
 %type <obj> KEY OBJREF BASEOBJ
 %type <indirectObj> INDIRECTOBJ
@@ -66,6 +66,11 @@ $$->obj=$1;
 $$=malloc(sizeof(pdObj));
 $$->typeInfo=pdTypeDictionary;
 $$->obj=$1;
+}
+|STREAM ENDSTREAM {
+$$=malloc(sizeof(pdObj));
+$$->typeInfo=pdTypeStream;
+$$->obj=$2;
 }
 ;
 
