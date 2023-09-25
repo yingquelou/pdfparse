@@ -8,6 +8,7 @@ int yyerror(char *s);
 #endif
 #include<stdio.h>
 extern int yydebug;
+FILE*report=NULL;
 int print(void*,void*);
 %}
 
@@ -25,16 +26,19 @@ int print(void*,void*);
 %token <boolean> BOOLEAN
 %token <integer> INTEGER
 %token <real> REAL
-%token <string> STRING
+%token <string> STRING ENDSTREAM
 %token <name> NAME
 %token <objnum> OBJ INDIRECTOBJREF
-%token LD RD PDNULL ENDOBJ STREAM ENDSTREAM
+%token LD RD PDNULL ENDOBJ STREAM
 %type <list> OBJLIST ARRAY ENTRYSET DICTIONARY
 %type <obj> KEY OBJREF BASEOBJ
 %type <indirectObj> INDIRECTOBJ
 %start test
 %% 
-test: OBJLIST {listDForEach($1,print,NULL);};
+test: OBJLIST {
+report=fopen("E:\\code\\pythonProjects\\conanTest\\report.txt","w");
+    listDForEach($1,print,NULL);
+};
 
 OBJLIST: {$$=pdnull;}
 |OBJLIST OBJREF {$$=listDPushBack($1,$2);}
@@ -133,7 +137,7 @@ int yyerror(char *s)
 }       
 int main(int argc, char const *argv[])
 {
-    yydebug=1;
+    //yydebug=1;
     yyin=fopen("E:\\code\\pythonProjects\\conanTest\\test.txt","rb");
     yyout=fopen("E:\\code\\pythonProjects\\conanTest\\rest.txt","w");
     yyparse();
@@ -141,8 +145,8 @@ int main(int argc, char const *argv[])
 }
 int print(void*x,void*y){
     if(x)
- fprintf(yyout,"%d\n",((PdObj)x)->typeInfo);
+ fprintf(report,"%d\n",((PdObj)x)->typeInfo);
  else
- fprintf(yyout,"null\n");
+ fprintf(report,"null\n");
  return 0;
 }

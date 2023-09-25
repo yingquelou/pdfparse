@@ -6,7 +6,8 @@
 #include"y.tab.h"
 #endif
 long streamStartPos=0;
-#define ECHO if(streamStartPos==0) do { if (fwrite( yytext, (size_t) yyleng, 1, yyout )) {} } while (0)
+unsigned long long pos=0;
+#define ECHO do {pos+=yyleng; if(streamStartPos==0) if (fwrite( yytext, (size_t) yyleng, 1, yyout )) {} } while (0)
 %}
 
 LA \[
@@ -29,15 +30,17 @@ name \/[^ \r\n]+
 %%
 
 %.*$ {}
-{EOL} {}
-{space} {}
+{EOL} {pos+=yyleng;}
+{space} {pos+=yyleng;}
 true {
+	pos+=yyleng;
 	if(streamStartPos==0)
 	{yylval.boolean=malloc(sizeof(pdBoolean));
 	*(yylval.boolean)=true;
 	return BOOLEAN;}
 }
 false {
+	pos+=yyleng;
 	if(streamStartPos==0)
 	{yylval.boolean=malloc(sizeof(pdBoolean));
 	*(yylval.boolean)=false;
@@ -45,18 +48,21 @@ false {
 }
 
 {INT}   {
+	pos+=yyleng;
 	if(streamStartPos==0)
 	{yylval.integer=malloc(sizeof(pdInteger));
 	*(yylval.integer)=atoll(yytext);
 	return INTEGER;}
 }
 {f}     {
+	pos+=yyleng;
 	if(streamStartPos==0)
 	{yylval.real=malloc(sizeof(pdReal));
 	*(yylval.real)=atof(yytext);
 	return REAL;}
 }
 {name} {
+	pos+=yyleng;
 	if(streamStartPos==0)
 	{yylval.name=malloc(yyleng+1);
 	memcpy(yylval.name,yytext,yyleng);
@@ -64,6 +70,7 @@ false {
 	return NAME;}
 }
 {string} {
+	pos+=yyleng;
 	if(streamStartPos==0)
 	{yylval.string=malloc(sizeof(pdString));
 	yylval.string->isHex=false;
@@ -74,6 +81,7 @@ false {
 	return STRING;}
 }
 \<{xd}*\> {
+	pos+=yyleng;
 	if(streamStartPos==0)
 	{yylval.string=malloc(sizeof(pdString));
 	yylval.string->isHex=true;
@@ -84,6 +92,7 @@ false {
 	return STRING;}
 }
 {OBJ} {
+	pos+=yyleng;
 	if(streamStartPos==0)
 	{char*textpos;
 	yylval.objnum.first=strtoll(yytext,&textpos,10);
@@ -91,6 +100,7 @@ false {
 	return OBJ;}
 }
 {INDIRECTOBJREF} {
+	pos+=yyleng;
 	if(streamStartPos==0)
 	{char*textpos;
 	yylval.objnum.first=strtoll(yytext,&textpos,10);
@@ -98,54 +108,65 @@ false {
 	return INDIRECTOBJREF;}
 }
 endobj {
+	pos+=yyleng;
+//printf("%s\t%d\n",yytext,ftell(yyin));
+
 	if(streamStartPos==0)
 	return ENDOBJ;
 }
 
 {LD} {
+	pos+=yyleng;
 	if(streamStartPos==0)
 	return LD;
 }
 {RD} {
+	pos+=yyleng;
 	if(streamStartPos==0)
 	return RD;
 }
 {LA} {
+	pos+=yyleng;
 	if(streamStartPos==0)
 	return '[';
 }
 {RA} {
+	pos+=yyleng;
 	if(streamStartPos==0)
 	return ']';
 }
 null {
+	pos+=yyleng;
 	if(streamStartPos==0)
 	return PDNULL;
 }
-stream {
-if(streamStartPos)
-	exit(1);
-streamStartPos=ftell(yyin);
-printf("%s\t%d\n",yytext,streamStartPos);
-return STREAM;
-}
-endstream {
-// 暂时有bug
+
+{EOL}*endstream {
+long tmp=ftell(yyin);
 PdString str=malloc(sizeof(pdString));
-str->length=ftell(yyin)-streamStartPos-9;
+str->length=pos-streamStartPos;
 str->str=malloc(str->length+1);
-fseek(yyin, 9-str->length, SEEK_CUR);
+fseek(yyin, streamStartPos, SEEK_SET);
 fread(str->str,1,str->length,yyin);
-printf("%d\t%d\n",streamStartPos,str->length);
 str->isHex=false;
-fseek(yyin, 9, SEEK_CUR);
-streamStartPos=0;
+fseek(yyin, tmp, SEEK_SET);
+str->str[str->length]='\0';
+fprintf(yyout,"%d\t%s",streamStartPos,str->str);
 yylval.string=str;
+pos+=yyleng;
+streamStartPos=0;
 return ENDSTREAM;
 }
-{keyword} {
+stream{EOL}* {
+pos+=yyleng;
+if(streamStartPos)
+	exit(1);
+streamStartPos=pos;
+return STREAM;
 }
-
+{keyword} {
+pos+=yyleng;
+}
 %%
 int yywrap()
 {
