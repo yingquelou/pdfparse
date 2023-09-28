@@ -31,7 +31,7 @@ typedef struct pdIndirectObjRef
  * FDecodeParms|dictionary or array|（可选;PDF 1.2） 由 FFilter 指定的过滤器使用的参数字典或此类字典的数组。与DecodeParms相同的规则适用。
  * DL|integer|（可选;PDF 1.5） 一个非负整数，表示解码（去过滤）流中的字节数。例如，它可用于确定是否有足够的磁盘空间将流写入文件。此值应仅被视为提示;对于某些流筛选器，可能无法精确确定此值。
  */
-typedef pdIndirectObj pdStream, *PdStream;
+typedef pdIndirectObj pdStreamObj, *PdStreamObj;
 /*
  * 对象流
  * 对象流共含两个部分,第一部分是一个字典,用于描述第二部分的结构信息,其要求如下所示:
@@ -75,14 +75,14 @@ typedef struct pdXrefEntry
     // 整个交叉引用表的的第一个条目是这条链表的首元节点,
     // 而且整个交叉引用表的最后一个空闲条目亦指向链表的首元节点,
     // 即此链表是循环的,是一个循环链表
-    PdInteger offset;
+    long long offset;
     // 应表示当前对象已被修改的次数
     // 在pdf文件的一次打开-保存周期内至少修改过一次,则generation增长1
     // 若pdf读写引擎比较宽松,不严格执行generation的增长,亦无伤大雅
     // 即当前对象的版本代号,其值不得大于GENERATIONMAX
     // 新对象,代号为0
     // 对整个交叉引用表的的第一个条目,其值始终为GENERATIONMAX
-    PdInteger generation;
+    long long generation;
     // 表示当前条目是否处于空闲状态,f-空闲,n-非空闲
     char free;
 } pdXrefEntry, *PdXrefEntry;
@@ -90,18 +90,12 @@ typedef struct pdXrefEntry
 typedef struct pdXrefSubsection
 {
     // 当前小节的起始对象编号
-    PdInteger startNum;
+    long long startNum;
     // 当前小节的的长度(条目数)
-    PdInteger length;
+    long long length;
     ListD Entries;
 } pdXrefSubsection, *PdXrefSubsection;
  
 // 交叉引用表
-typedef struct pdXref
-{
-    // 持有交叉引用表的所有小节(子表)
-    ListD sections;
-    // 小节(子表)的数目
-    PdInteger num;
-} pdXref, *PdXref;
+typedef ListD PdXref;
 #endif

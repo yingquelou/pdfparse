@@ -11,27 +11,33 @@ extern int yydebug;
 FILE*report=NULL;
 int print(void*,void*);
 %}
-
+%debug
 %union{
     PdBoolean boolean;
     PdInteger integer;
     PdReal real;
     PdString string;
+    PdXString xstring;
+    PdStream stream;
     PdName name;
     ListD list;
     PdObj obj;
+    PdXrefSubsection subXref;
     PdIndirectObj indirectObj;
     struct {long long first;long long second;}objnum;
 }
 %token <boolean> BOOLEAN
-%token <integer> INTEGER
+%token <integer> INTEGER STARTXREFOBJ
 %token <real> REAL
-%token <string> STRING ENDSTREAM
+%token <string> STRING 
+%token <stream> ENDSTREAM
+%token <xstring> XSTRING
 %token <name> NAME
-%token <objnum> OBJ INDIRECTOBJREF
-%token LD RD PDNULL ENDOBJ STREAM
-%type <list> OBJLIST ARRAY ENTRYSET DICTIONARY
+%token <objnum> OBJ INDIRECTOBJREF NXREFENTRY FXREFENTRY SUBXREFHEAD
+%token LD RD PDNULL ENDOBJ STREAM XREF TRAILER STARTXREF
+%type <list> OBJLIST ARRAY ENTRYSET DICTIONARY SUBXREFLIST SUBXREFENTRYLIST XREFOBJ
 %type <obj> KEY OBJREF BASEOBJ
+%type <subXref> SUBXREF
 %type <indirectObj> INDIRECTOBJ
 %start test
 %% 
@@ -50,6 +56,26 @@ OBJREF:PDNULL {$$=pdnull;}
 $$=malloc(sizeof(pdObj));
 $$->typeInfo=pdTypeIndirectObj;
 $$->obj=$1;
+}
+|XREFOBJ{
+$$=malloc(sizeof(pdObj));
+$$->typeInfo=pdocXref;
+$$->obj=$1;
+}
+|STREAM ENDSTREAM {
+$$=malloc(sizeof(pdObj));
+$$->typeInfo=pdTypeStream;
+$$->obj=$2;
+}
+|TRAILER DICTIONARY {
+$$=malloc(sizeof(pdObj));
+$$->typeInfo=pdocTrailer;
+$$->obj=$2;
+}
+|STARTXREF INTEGER {
+$$=malloc(sizeof(pdObj));
+$$->typeInfo=pdocStartXref;
+$$->obj=$2;
 }
 ; 
 KEY:BASEOBJ {$$=$1;}
@@ -71,11 +97,6 @@ $$=malloc(sizeof(pdObj));
 $$->typeInfo=pdTypeDictionary;
 $$->obj=$1;
 }
-|STREAM ENDSTREAM {
-$$=malloc(sizeof(pdObj));
-$$->typeInfo=pdTypeStream;
-$$->obj=$2;
-}
 ;
 
 BASEOBJ :BOOLEAN {
@@ -96,6 +117,11 @@ $$->obj=$1;
 |STRING{
 $$=malloc(sizeof(pdObj));
 $$->typeInfo=pdTypeString;
+$$->obj=$1;
+}
+|XSTRING{
+$$=malloc(sizeof(pdObj));
+$$->typeInfo=pdTypeXString;
 $$->obj=$1;
 }
 |NAME{
@@ -127,17 +153,46 @@ INDIRECTOBJ:OBJ[num] OBJLIST[objList] ENDOBJ {
     $$->objList=$objList;
 }
 ;
+XREFOBJ:XREF SUBXREFLIST{
+    $$=$2;
+};
 
+SUBXREFLIST:{$$=pdnull;}
+|SUBXREFLIST SUBXREF{$$=listDPushBack($1,$2);};
+
+SUBXREF:SUBXREFHEAD SUBXREFENTRYLIST{
+    $$=malloc(sizeof(pdXrefSubsection));
+    $$->startNum=$1.first;
+    $$->length=$1.second;
+    $$->Entries=$2;
+};
+SUBXREFENTRYLIST:{$$=pdnull;}
+|SUBXREFENTRYLIST FXREFENTRY{
+PdXrefEntry entry= malloc(sizeof(pdXrefEntry));
+entry->offset=$2.first;
+entry->generation=$2.second;
+entry->free='f';
+$$=listDPushBack($1,entry);
+}
+|SUBXREFENTRYLIST NXREFENTRY{
+PdXrefEntry entry= malloc(sizeof(pdXrefEntry));
+entry->offset=$2.first;
+entry->generation=$2.second;
+entry->free='n';
+$$=listDPushBack($1,entry);
+}
+;
 %%
 
 int yyerror(char *s)
 {
-    fprintf(stderr,"error:%s\n",s);
+    fprintf(stderr,"error:%s->%d\n",s,pos);
     return 0; 
 }       
 int main(int argc, char const *argv[])
 {
     //yydebug=1;
+    //yyin=fopen("E:\\desktop\\matlab_ref_zh_CN.pdf","rb");
     yyin=fopen("E:\\code\\pythonProjects\\conanTest\\test.txt","rb");
     yyout=fopen("E:\\code\\pythonProjects\\conanTest\\rest.txt","w");
     yyparse();

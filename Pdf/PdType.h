@@ -20,13 +20,11 @@ typedef double pdReal, *PdReal;
 // base type - strings
 typedef struct pdString
 {
-    // 字符(串)序列大小长度
-    size_t length;
-    // 表示是否是十六进制字符(串)序列
-    bool isHex;
-    // 字符(串)序列
-    char *str;
-} pdString, *PdString;
+    // 缓冲区大小
+    size_t bufferSize;
+    // 缓冲区
+    char *buffer;
+} pdString,pdXString,pdStream, *PdString,*PdXString,*PdStream;
 // base type - Name
 // 注意:名字类型要么都是动态分配,要么都不是
 typedef char *PdName;

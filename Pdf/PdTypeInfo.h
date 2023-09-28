@@ -9,7 +9,9 @@ typedef enum pdTypeInfo
     pdTypeInteger,
     pdTypeReal,
     pdTypeString,
+    pdTypeXString,
     pdTypeName,
+    pdTypeStream,
     // 复合类型
 
     pdTypeArray,
@@ -17,7 +19,6 @@ typedef enum pdTypeInfo
     pdTypeIndirectObj,
     pdTypeIndirectObjRef,
 
-    pdTypeStream,
     pdTypeObjsXrefNum,
 
     /* 操作符 */
@@ -25,6 +26,12 @@ typedef enum pdTypeInfo
     pdOperateRA,
     pdOperateLD,
     pdOperateRD,
+    /* 交叉引用表 */
+    pdocXref,
+    pdocXrefSubsection,
+    pdocXrefEntry,
+    pdocTrailer,
+    pdocStartXref
 } PdTypeInfo;
 // 非pdf类型,旨在引用pdf类型对象
 typedef struct pdObj
