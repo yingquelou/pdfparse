@@ -22,7 +22,7 @@ xd [0-9A-Fa-f]
 f [+-]?{d}*\.{d}+
 OBJ {INT}{space}+{INT}{space}+obj
 INT [+-]?{d}+
-INDIRECTOBJREF {INT}{space}+{INT}({space}|{EOL})+R
+INDIRECTOBJREF {INT}({space}|{EOL})+{INT}({space}|{EOL})+R
 space " "
 EOL \r?\n
 name \/[^ \/\\\t\r\n\[\]\<\(\)\>]+
