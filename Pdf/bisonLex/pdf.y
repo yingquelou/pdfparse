@@ -1,17 +1,15 @@
 %{
 int yyerror(char *s);
-#include "..\\Pdocument.h"
-#ifndef DEBUG 
-#include "..\\List\\listd.c"
-#else
+#include "Pdocument.h"
 #include "listd.h"
-#endif
-#include<stdio.h>
-extern int yydebug;
-FILE*report=NULL;
-int print(void*,void*);
+#include <stdio.h>
+//extern int yydebug;
+extern long long pos;
+ListD finalList=NULL;
+static FILE*report=NULL;
 %}
-%debug
+//%debug
+
 %union{
     PdBoolean boolean;
     PdInteger integer;
@@ -27,7 +25,7 @@ int print(void*,void*);
     struct {long long first;long long second;}objnum;
 }
 %token <boolean> BOOLEAN
-%token <integer> INTEGER STARTXREFOBJ
+%token <integer> INTEGER
 %token <real> REAL
 %token <string> STRING 
 %token <stream> ENDSTREAM
@@ -43,7 +41,7 @@ int print(void*,void*);
 %% 
 test: OBJLIST {
 report=fopen("E:\\code\\pythonProjects\\conanTest\\report.txt","w");
-    listDForEach($1,print,NULL);
+finalList=$1;
 };
 
 OBJLIST: {$$=pdnull;}
@@ -189,19 +187,3 @@ int yyerror(char *s)
     fprintf(stderr,"error:%s->%d\n",s,pos);
     return 0; 
 }       
-int main(int argc, char const *argv[])
-{
-    //yydebug=1;
-    //yyin=fopen("E:\\desktop\\matlab_ref_zh_CN.pdf","rb");
-    yyin=fopen("E:\\code\\pythonProjects\\conanTest\\test.txt","rb");
-    yyout=fopen("E:\\code\\pythonProjects\\conanTest\\rest.txt","w");
-    yyparse();
-    return 0;
-}
-int print(void*x,void*y){
-    if(x)
- fprintf(report,"%d\n",((PdObj)x)->typeInfo);
- else
- fprintf(report,"null\n");
- return 0;
-}

@@ -21,11 +21,6 @@ typedef enum pdTypeInfo
 
     pdTypeObjsXrefNum,
 
-    /* 操作符 */
-    pdOperateLA,
-    pdOperateRA,
-    pdOperateLD,
-    pdOperateRD,
     /* 交叉引用表 */
     pdocXref,
     pdocXrefSubsection,

@@ -1,11 +1,7 @@
 #ifndef PDTYPE_H
 #define PDTYPE_H 1
 #include <stdbool.h>
-#ifndef DEBUG 
-#include "List/listd.h"
-#else
 #include "listd.h"
-#endif
 #include <stdio.h>
 #include "PdTypeInfo.h"
 
