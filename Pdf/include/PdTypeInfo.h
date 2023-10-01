@@ -10,23 +10,18 @@ typedef enum pdTypeInfo
     pdTypeReal,
     pdTypeString,
     pdTypeXString,
-    pdTypeName,
     pdTypeStream,
+    pdTypeName,
     // 复合类型
 
     pdTypeArray,
     pdTypeDictionary,
-    pdTypeIndirectObj,
     pdTypeIndirectObjRef,
 
-    pdTypeObjsXrefNum,
+    // pdTypeObjsXrefNum,
 
-    /* 操作符 */
-    pdOperateLA,
-    pdOperateRA,
-    pdOperateLD,
-    pdOperateRD,
-    /* 交叉引用表 */
+    /* pdf文档子结构 */
+    pdTypeIndirectObj,
     pdocXref,
     pdocXrefSubsection,
     pdocXrefEntry,

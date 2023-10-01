@@ -1,12 +1,8 @@
 #ifndef PDTYPE_H
 #define PDTYPE_H 1
 #include <stdbool.h>
-#ifndef DEBUG 
-#include "List/listd.h"
-#else
-#include "listd.h"
-#endif
 #include <stdio.h>
+#include "listd.h"
 #include "PdTypeInfo.h"
 
 // base type - null object
@@ -18,7 +14,7 @@ typedef long long pdInteger, *PdInteger;
 // base type - Real numbers
 typedef double pdReal, *PdReal;
 // base type - strings
-typedef struct pdString
+typedef struct buffer
 {
     // 缓冲区大小
     size_t bufferSize;
