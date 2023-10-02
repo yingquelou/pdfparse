@@ -39,15 +39,15 @@ void PdNameDestroy(PdName pValue)
     if (pValue)
         free(pValue);
 }
-static int PdObjDestroyRef(void *obj, void *arg)
+static void *PdObjDestroyRef(void *obj, void *arg)
 {
-    return PdObjDestroy((PdObj)obj), 0;
+    return PdObjDestroy((PdObj)obj), NULL;
 }
 void PdArrayDestroy(PdArray pValue)
 {
     listDestroy(pValue, PdObjDestroyRef, NULL);
 }
-static int PdDictionaryEntryDestroy(void *entry, void *arg)
+static void *PdDictionaryEntryDestroy(void *entry, void *arg)
 {
     if (entry)
     {
@@ -56,6 +56,7 @@ static int PdDictionaryEntryDestroy(void *entry, void *arg)
         PdObjDestroy(e->value);
         free(entry);
     }
+    return NULL;
 }
 void PdDictionaryDestroy(PdDictionary pValue)
 {
@@ -74,12 +75,13 @@ void PdIndirectObjDestroy(PdIndirectObj obj)
         free(obj);
     }
 }
-static int PdXrefEntryDestroy(void *obj, void *arg)
+static void *PdXrefEntryDestroy(void *obj, void *arg)
 {
     if (obj)
         free(obj);
+    return NULL;
 }
-static int PdXrefSubsectionDestroy(void *obj, void *arg)
+static void* PdXrefSubsectionDestroy(void *obj, void *arg)
 {
     if (obj)
     {
@@ -87,6 +89,7 @@ static int PdXrefSubsectionDestroy(void *obj, void *arg)
         listDestroy(subXref->Entries, PdXrefEntryDestroy, NULL);
         free(obj);
     }
+    return NULL;
 }
 void PdXrefDestroy(PdXref xref)
 {

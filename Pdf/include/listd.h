@@ -38,7 +38,7 @@ extern ListDNode *listDInsertBeforeNode(ListDNode *node, void *d);
  */
 extern ListDNode *listDPushBack(ListD, void *);
 extern ListDNode *listDPushFront(ListD, void *);
-typedef int (*listOperator)(void *, void *);
+typedef void *(*listOperator)(void *, void *);
 /**
  * \brief 遍历链表,对各结点的数据域调用某个函数做某种操作
  * 本函数的第三个参数会被转发给操作子的第二个参数
@@ -49,6 +49,13 @@ typedef int (*listOperator)(void *, void *);
  */
 extern void listDForEach(ListDNode *, listOperator, void *);
 /**
+ * \brief 在映射规则(listOperator)的作用下,将原链表映射为新链表
+ * 借用数学上的映射概念:listOperator的第一个参数接受原像,listOperator的返回值即为像
+ * \return 新链表
+ * \date by yingquelou at 2023-10-03 20:13:23
+ */
+ListD listDMap(ListDNode *, listOperator, void *);
+/**
  * \brief 销毁链表
  * 行为与ListDForEach函数相同,但同时进行链表的销毁
  * 当第二个参数为NULL时,表示只销毁链表本身,此时第三个参数无意义
@@ -56,9 +63,10 @@ extern void listDForEach(ListDNode *, listOperator, void *);
  */
 extern void listDestroy(ListDNode *, listOperator, void *);
 /**
- * \brief 返回第一个满足要求(能令操作子返回0)的节点.
+ * \brief 返回第一个满足要求(能令操作子返回NULL)的节点.
  * 本函数的第三个参数会被转发给操作子的第二个参数
  * 操作子的第一个参数用于接收数据域指针
+ * 在listDSearch的实现中,不会对操作子的返回值进行任何解引用操作
  * \return 未找到返回NULL
  * \date by yingquelou at 2023-09-15 18:31:24
  */

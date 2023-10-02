@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.20)
+project(pdfwrite LANGUAGES C)
+file(GLOB READSRC *.c)
+include_directories(${HEADPATH})
+add_library(${PROJECT_NAME} ${SHARED} ${READSRC})
+target_link_libraries(${PROJECT_NAME} listUtil)

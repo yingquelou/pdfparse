@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION ${CMV})
 project(listUtil LANGUAGES C)
 
-add_library(listUtil ${SHARED} listd.c)
+add_library(${PROJECT_NAME} ${SHARED} listd.c)
 
 include_directories(${HEADPATH})
 

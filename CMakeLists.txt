@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.27.4)
+set(CMV 3.8)
+cmake_minimum_required(VERSION ${CMV})
 project(test LANGUAGES C)
 
 include(./utils.cmake)
@@ -11,10 +12,9 @@ if(${RESULT})
 else()
     set(SHARED SHARED)
 endif()
-set(TARGEOUT ${CMAKE_BINARY_DIR}/target)
+set(TARGEOUT ${CMAKE_BINARY_DIR})
 set(LIBRARY_OUTPUT_PATH ${TARGEOUT}/bin)
 set(EXECUTABLE_OUTPUT_PATH ${TARGEOUT}/bin)
-
+add_executable(${PROJECT_NAME} test.c)
 add_subdirectory(Pdf)
-
-
+report(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})

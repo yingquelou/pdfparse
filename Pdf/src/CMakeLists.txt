@@ -1,13 +1,12 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION ${CMV})
 project(pdfengin LANGUAGES C)
 
-add_subdirectory(read)
+add_subdirectory(reader)
 add_subdirectory(list)
 add_subdirectory(common)
-add_library(pdfengin ${SHARED} test.c)
+add_subdirectory(writer)
+
+add_library(${PROJECT_NAME} ${SHARED} test.c)
 
 include_directories(${HEADPATH})
-link_directories(${LIBPATH})
-target_link_libraries(pdfengin pdfreadengin)
-
-
+target_link_libraries(${PROJECT_NAME} pdfreader)

@@ -72,6 +72,17 @@ void listDForEach(ListDNode *node, listOperator func, void *arg)
 		node = node->next;
 	}
 }
+ListD listDMap(ListDNode *node, listOperator func, void *arg)
+{
+	node = listDBegin(node);
+	ListDNode *list = NULL;
+	while (node)
+	{
+		list = listDPushBack(list, func(node->data, arg));
+		node = node->next;
+	}
+	return list;
+}
 void listDestroy(ListDNode *node, listOperator func, void *arg)
 {
 	node = listDBegin(node);

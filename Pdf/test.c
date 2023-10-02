@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include "pdf.h"
-int print(void *obj, void *arg)
+void* print(void *obj, void *arg)
 {
     PdObj obj2=(PdObj)obj;
     fprintf((FILE*)arg,"%d\n", obj2->typeInfo);
