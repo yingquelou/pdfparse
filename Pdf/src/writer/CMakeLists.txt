@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(pdfwrite LANGUAGES C)
+project(pdfwriter LANGUAGES C)
 file(GLOB READSRC *.c)
 include_directories(${HEADPATH})
 add_library(${PROJECT_NAME} ${SHARED} ${READSRC})

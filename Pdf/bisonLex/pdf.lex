@@ -102,8 +102,8 @@ xref {
 	
 	pos+=yyleng;
 	if(streamStartPos==0)
-	{YYLVALREF.name=malloc(yyleng+1);
-	memcpy(YYLVALREF.name,yytext,yyleng);
+	{YYLVALREF.name=malloc(yyleng);
+	memcpy(YYLVALREF.name,yytext+1,yyleng-1);
 	YYLVALREF.name[yyleng]='\0';
 	return NAME;}
 }

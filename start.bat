@@ -4,7 +4,7 @@ if not defined YACC (
 setlocal ENABLEDELAYEDEXPANSION
 pushd Pdf
 pushd src
-pushd read
+pushd reader
     
 
 set PREFIX=pdf
