@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.8)
+project(pdf)
+file(GLOB SRCLIST *.c)
+link_directories(${LIBRARY_OUTPUT_PATH})
+add_library(${PROJECT_NAME} ${ISSHARED} ${SRCLIST})
+target_link_libraries(${PROJECT_NAME} path)
