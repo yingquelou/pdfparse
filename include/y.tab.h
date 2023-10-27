@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.7.4.  */
+/* A Bison parser, made by GNU Bison 3.8.2.  */
 
 /* Bison interface for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2020 Free Software Foundation,
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2021 Free Software Foundation,
    Inc.
 
    This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -35,14 +35,14 @@
    especially those whose name start with YY_ or yy_.  They are
    private implementation details that can be changed or removed.  */
 
-#ifndef YY_PDF_PDF_TAB_H_INCLUDED
-# define YY_PDF_PDF_TAB_H_INCLUDED
+#ifndef YY_YY_Y_TAB_H_INCLUDED
+# define YY_YY_Y_TAB_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
 #endif
 #if YYDEBUG
-extern int pdfdebug;
+extern int yydebug;
 #endif
 
 /* Token kinds.  */
@@ -54,26 +54,26 @@ extern int pdfdebug;
     YYEOF = 0,                     /* "end of file"  */
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
-    BOOLEAN = 258,                 /* BOOLEAN  */
-    INTEGER = 259,                 /* INTEGER  */
-    REAL = 260,                    /* REAL  */
-    STRING = 261,                  /* STRING  */
-    ENDSTREAM = 262,               /* ENDSTREAM  */
+    PDNULL = 258,                  /* PDNULL  */
+    BOOLEAN = 259,                 /* BOOLEAN  */
+    INTEGER = 260,                 /* INTEGER  */
+    REAL = 261,                    /* REAL  */
+    STRING = 262,                  /* STRING  */
     XSTRING = 263,                 /* XSTRING  */
     NAME = 264,                    /* NAME  */
-    OBJ = 265,                     /* OBJ  */
-    INDIRECTOBJREF = 266,          /* INDIRECTOBJREF  */
-    NXREFENTRY = 267,              /* NXREFENTRY  */
-    FXREFENTRY = 268,              /* FXREFENTRY  */
-    SUBXREFHEAD = 269,             /* SUBXREFHEAD  */
-    LD = 270,                      /* LD  */
-    RD = 271,                      /* RD  */
-    PDNULL = 272,                  /* PDNULL  */
-    ENDOBJ = 273,                  /* ENDOBJ  */
-    STREAM = 274,                  /* STREAM  */
-    XREF = 275,                    /* XREF  */
-    TRAILER = 276,                 /* TRAILER  */
-    STARTXREF = 277                /* STARTXREF  */
+    STREAM = 265,                  /* STREAM  */
+    ENDOBJ = 266,                  /* ENDOBJ  */
+    LD = 267,                      /* LD  */
+    RD = 268,                      /* RD  */
+    XREF = 269,                    /* XREF  */
+    TRAILER = 270,                 /* TRAILER  */
+    STARTXREF = 271,               /* STARTXREF  */
+    ENDSTREAM = 272,               /* ENDSTREAM  */
+    OBJ = 273,                     /* OBJ  */
+    INDIRECTOBJREF = 274,          /* INDIRECTOBJREF  */
+    NXREFENTRY = 275,              /* NXREFENTRY  */
+    FXREFENTRY = 276,              /* FXREFENTRY  */
+    SUBXREFHEAD = 277              /* SUBXREFHEAD  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -82,44 +82,33 @@ extern int pdfdebug;
 #define YYEOF 0
 #define YYerror 256
 #define YYUNDEF 257
-#define BOOLEAN 258
-#define INTEGER 259
-#define REAL 260
-#define STRING 261
-#define ENDSTREAM 262
+#define PDNULL 258
+#define BOOLEAN 259
+#define INTEGER 260
+#define REAL 261
+#define STRING 262
 #define XSTRING 263
 #define NAME 264
-#define OBJ 265
-#define INDIRECTOBJREF 266
-#define NXREFENTRY 267
-#define FXREFENTRY 268
-#define SUBXREFHEAD 269
-#define LD 270
-#define RD 271
-#define PDNULL 272
-#define ENDOBJ 273
-#define STREAM 274
-#define XREF 275
-#define TRAILER 276
-#define STARTXREF 277
+#define STREAM 265
+#define ENDOBJ 266
+#define LD 267
+#define RD 268
+#define XREF 269
+#define TRAILER 270
+#define STARTXREF 271
+#define ENDSTREAM 272
+#define OBJ 273
+#define INDIRECTOBJREF 274
+#define NXREFENTRY 275
+#define FXREFENTRY 276
+#define SUBXREFHEAD 277
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
 
-    PdBoolean boolean;
-    PdInteger integer;
-    PdReal real;
-    PdString string;
-    PdXString xstring;
-    PdStream stream;
-    PdName name;
-    ListD list;
-    PdObj obj;
-    PdXrefSubsection subXref;
-    PdIndirectObj indirectObj;
-    struct {long long first;long long second;}objnum;
+    cJSON *obj;
 
 
 };
@@ -129,8 +118,10 @@ typedef union YYSTYPE YYSTYPE;
 #endif
 
 
-extern YYSTYPE pdflval;
+extern YYSTYPE yylval;
 
-int pdfparse (void);
 
-#endif /* !YY_PDF_PDF_TAB_H_INCLUDED  */
+int yyparse (void);
+
+
+#endif /* !YY_YY_Y_TAB_H_INCLUDED  */

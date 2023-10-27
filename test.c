@@ -17,6 +17,7 @@ void *print(void *obj, void *arg)
     return 0;
 }
 #include <string.h>
+#include <cjson/cJSON.h>
 int main(int argc, char const *argv[])
 {
     char buffer[4096];
@@ -30,6 +31,8 @@ int main(int argc, char const *argv[])
     // ListD list = pdEngin("E:\\code\\cPojects\\pdfengine\\test.txt", "rest.txt");
     listDestroy(list, print, f);
     fclose(f);
+    cJSON_CreateFalse();
     fclose(stderr);
+    fread()
     return 0;
 }

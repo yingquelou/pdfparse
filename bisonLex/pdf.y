@@ -1,288 +1,185 @@
 %{
-int yyerror(char *s);
-#include "Pdocument.h"
-#include "listd.h"
-#include <stdio.h>
-//extern int yydebug;
-extern long long pos;
-ListD finalList=NULL;
-char **initCacheIndex();
+#include<cjson/cJSON.h>
+#include"lex.yy.h"
+cJSON *cJSON_ConvertArrayToObject(cJSON *);
+cJSON *pdfObjOfJsonCache=NULL;
+int n=0;
+char name[FILENAME_MAX];
+int yyerror(char *);
 %}
-//%debug
 
 %union{
-    PdBoolean boolean;
-    PdInteger integer;
-    PdReal real;
-    PdString string;
-    PdXString xstring;
-    PdStream stream;
-    PdName name;
-    ListD list;
-    PdObj obj;
-    PdXrefSubsection subXref;
-    PdIndirectObj indirectObj;
-    struct {long long first;long long second;}objnum;
+    cJSON *obj;
 }
-%token <boolean> BOOLEAN
-%token <integer> INTEGER
-%token <real> REAL
-%token <string> STRING 
-%token <stream> ENDSTREAM
-%token <xstring> XSTRING
-%token <name> NAME
-%token <objnum> OBJ INDIRECTOBJREF NXREFENTRY FXREFENTRY SUBXREFHEAD
-%token LD RD PDNULL ENDOBJ STREAM XREF TRAILER STARTXREF
-%type <list> OBJLIST ARRAY LIST ENTRYSET DICTIONARY SUBXREFLIST SUBXREFENTRYLIST XREFOBJ
-%type <obj> KEY OBJREF BASEOBJ
-%type <subXref> SUBXREF
-%type <indirectObj> INDIRECTOBJ
+// 基本对象
+%token <obj> PDNULL BOOLEAN INTEGER REAL STRING XSTRING NAME
+// 复合对象
+%type <obj> DICTIONARY ARRAY
+// 标记符1
+%token STREAM ENDOBJ LD RD XREF TRAILER STARTXREF
+// 标记符2
+%token <obj> ENDSTREAM OBJ
+// 文档结构
+%type <obj> INDIRECTOBJ XREFTABELS
+// 辅助构建1
+%token <obj> INDIRECTOBJREF NXREFENTRY FXREFENTRY SUBXREFHEAD
+// 辅助构建2
+%type <obj> LIST ENTRYSET SUBXREFLIST SUBXREFENTRYLIST KEY OBJREF BASEOBJ SUBXREF
+
 %start main
 %% 
 main: OBJLIST {
-finalList=$1;
+    char *buffer = cJSON_Print(pdfObjOfJsonCache);
+    FILE*dest=fopen("path.json","wb");
+    fputs(buffer,dest);
+    free(buffer);
+    fclose(dest);
+    cJSON_Delete(pdfObjOfJsonCache);
 };
 
-OBJLIST: {$$=pdnull;}
-|OBJLIST OBJREF {$$=listDPushBack($1,$2);}
+OBJLIST:
+|OBJLIST OBJREF {
+    char *buffer = cJSON_Print($2);
+    if(cJSON_IsObject($2)){
+    if (cJSON_HasObjectItem($2,"id"))
+    {
+      cJSON*id = cJSON_GetObjectItem($2,"id");
+      sprintf(name,"%s/%sobj%s.json",cJSON_GetStringValue(cJSON_GetObjectItem(pdfObjOfJsonCache,"obj")),cJSON_GetStringValue(cJSON_GetArrayItem(id,0)),cJSON_GetStringValue(cJSON_GetArrayItem(id,1)));
+    }
+    else if(cJSON_HasObjectItem($2,"xref")){
+      sprintf(name,"%s/%d.json",cJSON_GetStringValue(cJSON_GetObjectItem(pdfObjOfJsonCache,"xref")),n++);
+    }
+    else if(cJSON_HasObjectItem($2,"startxref")){
+      cJSON*startxref = cJSON_GetObjectItem($2,"startxref");
+      sprintf(name,"%s/%s.json",cJSON_GetStringValue(cJSON_GetObjectItem(pdfObjOfJsonCache,"startxref")),cJSON_GetStringValue((startxref)));
+    }
+    else if(cJSON_HasObjectItem($2,"trailer")){
+      sprintf(name,"%s/%d.json",cJSON_GetStringValue(cJSON_GetObjectItem(pdfObjOfJsonCache,"trailer")),n++);
+    }
+    }
+    else{
+      sprintf(name,"%s/%d.json",cJSON_GetStringValue(cJSON_GetObjectItem(pdfObjOfJsonCache,"others")),n++);
+    }
+    FILE*dest=fopen(name,"wb");
+    fputs(buffer,dest);
+    free(buffer);
+    fclose(dest);
+    cJSON_Delete($2);
+    }
 ;
 
-OBJREF:PDNULL {$$=pdnull;}
-|KEY {$$=$1;}
-|INDIRECTOBJ{
-$$=malloc(sizeof(pdObj));
-$$->typeInfo=pdTypeIndirectObj;
-$$->obj=$1;
+OBJREF:PDNULL {
+    $$=cJSON_CreateNull();
 }
-|XREFOBJ{
-$$=malloc(sizeof(pdObj));
-$$->typeInfo=pdocXref;
-$$->obj=$1;
-}
-|STREAM ENDSTREAM {
-$$=malloc(sizeof(pdObj));
-$$->typeInfo=pdTypeStream;
-$$->obj=$2;
-}
+|KEY
+|INDIRECTOBJ
+|XREFTABELS
+|STREAM ENDSTREAM {$$=$2;}
 |TRAILER DICTIONARY {
-$$=malloc(sizeof(pdObj));
-$$->typeInfo=pdocTrailer;
-$$->obj=$2;
+  $$=cJSON_CreateObject();
+  cJSON_AddItemToObject($$,"trailer",$2);
 }
 |STARTXREF INTEGER {
-$$=malloc(sizeof(pdObj));
-$$->typeInfo=pdocStartXref;
-$$->obj=$2;
+  $$=cJSON_CreateObject();
+  cJSON_AddItemToObject($$,"startxref",$2);
 }
 ; 
-KEY:BASEOBJ {$$=$1;}
-|INDIRECTOBJREF{
-$$=malloc(sizeof(pdObj));
-$$->typeInfo=pdTypeIndirectObjRef;
-pdIndirectObjRef*ref=malloc(sizeof(pdIndirectObjRef));
-ref->id=$1.first;
-ref->generation=$1.second;
-$$->obj=ref;
-}
-|ARRAY{
-$$=malloc(sizeof(pdObj));
-$$->typeInfo=pdTypeArray;
-$$->obj=$1;
-}
-|DICTIONARY{
-$$=malloc(sizeof(pdObj));
-$$->typeInfo=pdTypeDictionary;
-$$->obj=$1;
-}
+KEY:BASEOBJ
+|INDIRECTOBJREF
+|ARRAY
+|DICTIONARY
 ;
 
-BASEOBJ :BOOLEAN {
-$$=malloc(sizeof(pdObj));
-$$->typeInfo=pdTypeBoolean;
-$$->obj=$1;
-}
-|INTEGER{
-$$=malloc(sizeof(pdObj));
-$$->typeInfo=pdTypeInteger;
-$$->obj=$1;
-}
-|REAL{
-$$=malloc(sizeof(pdObj));
-$$->typeInfo=pdTypeReal;
-$$->obj=$1;
-}
-|STRING{
-$$=malloc(sizeof(pdObj));
-$$->typeInfo=pdTypeString;
-$$->obj=$1;
-}
-|XSTRING{
-$$=malloc(sizeof(pdObj));
-$$->typeInfo=pdTypeXString;
-$$->obj=$1;
-}
-|NAME{
-$$=malloc(sizeof(pdObj));
-$$->typeInfo=pdTypeName;
-$$->obj=$1;
-}
+BASEOBJ :BOOLEAN
+|INTEGER
+|REAL
+|STRING
+|XSTRING
+|NAME
 ;
 ARRAY: '[' LIST ']' {$$=$2;}
         ;
 
-LIST: {$$=pdnull;}
-|LIST OBJREF {$$=listDPushBack($1,$2);}
+LIST: {$$=cJSON_CreateArray();}
+|LIST OBJREF {cJSON_AddItemToArray($1,$2);$$=$1;}
 ;
 
 DICTIONARY: LD ENTRYSET RD {
-    $$=$2;
+    $$=cJSON_ConvertArrayToObject($2);
+    if(cJSON_GetArraySize($2)==0)
+      cJSON_Delete($2);
 }
 ;
-ENTRYSET:{$$=pdnull;}
+ENTRYSET:{$$=cJSON_CreateArray();}
 |ENTRYSET KEY OBJREF {
-    PdDictionaryEntry entry=malloc(sizeof(pdDictionaryEntry));
-    entry->key=$2;
-    entry->value=$3;
-    $$=listDPushBack($1,entry);
+cJSON_AddItemToArray($1,$2);
+cJSON_AddItemToArray($1,$3);
+$$=$1;
 }
 ;
 
 INDIRECTOBJ:OBJ[num] LIST[objList] ENDOBJ {
-    $$=malloc(sizeof(pdIndirectObj));
-    $$->id=$num.first;
-    $$->generation=$num.second;
-    $$->objList=$objList;
-}
-;
-XREFOBJ:XREF SUBXREFLIST{
-    $$=$2;
+    $$=cJSON_CreateObject();
+    cJSON_AddItemToObject($$,"id",$num);
+    cJSON_AddItemToObject($$,"body",$objList);
 };
 
-SUBXREFLIST:{$$=pdnull;}
-|SUBXREFLIST SUBXREF{$$=listDPushBack($1,$2);};
+XREFTABELS:XREF SUBXREFLIST{
+  $$=cJSON_CreateObject();
+  cJSON_AddItemToObject($$,"xref",$2);
+};
+
+SUBXREFLIST:{$$=cJSON_CreateArray();}
+|SUBXREFLIST SUBXREF{
+    cJSON_AddItemToArray($1,$2);
+    $$=$1;
+};
 
 SUBXREF:SUBXREFHEAD SUBXREFENTRYLIST{
-    $$=malloc(sizeof(pdXrefSubsection));
-    $$->startNum=$1.first;
-    $$->length=$1.second;
-    $$->Entries=$2;
+$$=cJSON_CreateObject();
+cJSON_AddItemToObject($$,"size",$1);
+cJSON_AddItemToObject($$,"body",$2);
 };
-SUBXREFENTRYLIST:{$$=pdnull;}
+SUBXREFENTRYLIST:{$$=cJSON_CreateArray();}
 |SUBXREFENTRYLIST FXREFENTRY{
-PdXrefEntry entry= malloc(sizeof(pdXrefEntry));
-entry->offset=$2.first;
-entry->generation=$2.second;
-entry->free='f';
-$$=listDPushBack($1,entry);
+cJSON_AddItemToArray($1,$2);
+$$=$1;
 }
 |SUBXREFENTRYLIST NXREFENTRY{
-PdXrefEntry entry= malloc(sizeof(pdXrefEntry));
-entry->offset=$2.first;
-entry->generation=$2.second;
-entry->free='n';
-$$=listDPushBack($1,entry);
+cJSON_AddItemToArray($1,$2);
+$$=$1;
 }
 ;
 %%
 
 int yyerror(char *s)
 {
-    fprintf(stderr,"###error:%s->%lld###\n",s,pos);
+    perror(s);
     return 0; 
 }       
-#include <path.h>
-static char *prefix = NULL;
-static PdTypeInfo infoArr[] = {pdTypeBoolean,
-                               pdTypeInteger,
-                               pdTypeReal,
-                               pdTypeString,
-                               pdTypeXString,
-                               pdTypeStream,
-                               pdTypeName,
-                               // 复合类型
-
-                               pdTypeArray,
-                               pdTypeDictionary,
-                               pdTypeIndirectObjRef,
-
-                               // pdTypeObjsXrefNum,
-
-                               /* pdf文档子结构 */
-                               pdTypeIndirectObj,
-                               pdocXref,
-                               pdocXrefSubsection,
-                               pdocXrefEntry,
-                               pdocTrailer,
-                               pdocStartXref};
-static size_t IndexLength = sizeof(infoArr) / sizeof(PdTypeInfo);
-static char **pdTyeCount()
+cJSON *cJSON_ConvertArrayToObject(cJSON *item)
 {
-    return malloc(sizeof(char *) * IndexLength);
-}
-static void singleIndex(char **arr, PdTypeInfo info)
-{
-    switch (info)
+    if (cJSON_IsArray(item))
     {
-    case pdTypeBoolean:
-        arr[info] = createPath(prefix, "pdTypeBoolean");
-        break;
-    case pdTypeInteger:
-        arr[info] = createPath(prefix, "pdTypeInteger");
-        break;
-    case pdTypeReal:
-        arr[info] = createPath(prefix, "pdTypeReal");
-        break;
-    case pdTypeString:
-        arr[info] = createPath(prefix, "pdTypeString");
-        break;
-    case pdTypeXString:
-        arr[info] = createPath(prefix, "pdTypeXString");
-        break;
-    case pdTypeStream:
-        arr[info] = createPath(prefix, "pdTypeStream");
-        break;
-    case pdTypeName:
-        arr[info] = createPath(prefix, "pdTypeName");
-        break;
-    case pdTypeArray:
-        arr[info] = createPath(prefix, "pdTypeArray");
-        break;
-    case pdTypeDictionary:
-        arr[info] = createPath(prefix, "pdTypeDictionary");
-        break;
-    case pdocXrefSubsection:
-        arr[info] = createPath(prefix, "pdocXrefSubsection");
-        break;
-    case pdocXrefEntry:
-        arr[info] = createPath(prefix, "pdocXrefEntry");
-        break;
-    case pdTypeIndirectObjRef:
-        arr[info] = createPath(prefix, "pdTypeIndirectObjRef");
-        break;
-    case pdTypeIndirectObj:
-        arr[info] = createPath(prefix, "pdTypeIndirectObj");
-        break;
-    case pdocXref:
-        arr[info] = createPath(prefix, "pdocXref");
-        break;
-    case pdocTrailer:
-        arr[info] = createPath(prefix, "pdocTrailer");
-        break;
-    case pdocStartXref:
-        arr[info] = createPath(prefix, "pdocStartXref");
-        break;
-    default:
-        perror("undefined type");
-        break;
+        int sz = cJSON_GetArraySize(item);
+        if (sz <= 0 || sz % 2)
+            return item;
+        for (int i = 0; i < sz; i += 2)
+        {
+            if (cJSON_IsString(cJSON_GetArrayItem(item, i)))
+                continue;
+            else
+                return item;
+        }
+        cJSON *obj = cJSON_CreateObject();
+        cJSON *key, *value;
+        while (key = cJSON_DetachItemFromArray(item, 0))
+        {
+            value = cJSON_DetachItemFromArray(item, 0);
+            cJSON_AddItemToObject(obj,cJSON_GetStringValue(key),value);
+        }
+        return obj;
     }
-}
-char **initCacheIndex()
-{
-    char *tmp = getCurrent_path();
-    prefix = createPath(tmp, "cache");
-    free(tmp);
-    char **arr = pdTyeCount();
-    for (size_t i = 0; i < IndexLength; ++i)
-        singleIndex(arr, infoArr[i]);
-    return arr;
+    else
+        return item;
 }

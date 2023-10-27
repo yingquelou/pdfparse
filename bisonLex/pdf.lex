@@ -1,16 +1,10 @@
 %{
-#include "Pdocument.h"
-#ifdef YACCHEADFILE
-#include YACCHEADFILE
-#endif
-static long streamStartPos=0;
-static FILE*streamFile=NULL;
-static char*streamFileName=NULL;
-unsigned long long pos=0;
-char *tmpStreamFile()
-{
-    return tempnam(getenv("tmp"), "stream");
-}
+#include<cjson/cJSON.h>
+#include"y.tab.h"
+extern cJSON *pdfObjOfJsonCache;
+FILE*stream=NULL;
+extern int n;
+extern char name[FILENAME_MAX];
 %}
 %x ENTERSTREAM ENTERSTRING
 
@@ -32,205 +26,140 @@ name \/[^ \/\\\t\r\n\[\]\<\(\)\>]+
 
 %%
 
-{EOL} {pos+=yyleng;}
-{space} {pos+=yyleng;}
+{EOL} {}
+{space} {}
 true {
-	
-	pos+=yyleng;
-	YYLVALREF.boolean=malloc(sizeof(pdBoolean));
-	*(YYLVALREF.boolean)=true;
+	yylval.obj=cJSON_CreateTrue();
 	return BOOLEAN;
 }
 false {
-	
-	pos+=yyleng;
-	YYLVALREF.boolean=malloc(sizeof(pdBoolean));
-	*(YYLVALREF.boolean)=false;
+	yylval.obj=cJSON_CreateFalse();
 	return BOOLEAN;
 }
 xref {
-	pos+=yyleng;
 	return XREF;
 }
 ^{INT}{space}+{INT}{space}*{EOL} {
-	
-	pos+=yyleng;
-	char*textpos;
-	YYLVALREF.objnum.first=strtoll(yytext,&textpos,10);
-	YYLVALREF.objnum.second=strtoll(textpos,NULL,10);
+	char **arr=malloc(sizeof(char*)*2);
+	arr[0]=malloc(yyleng+1);
+	arr[1]=malloc(yyleng+1);
+	sscanf(yytext,"%s%s",arr[0],arr[1]);
+	yylval.obj=cJSON_CreateStringArray((const char *const *)arr,2);
+	free(arr[0]);free(arr[1]);
 	return SUBXREFHEAD;
 }
 ^{d}{10}{space}+{d}{5}{space}+f{space}*{EOL} {
-	
-	pos+=yyleng;
-	char*textpos;
-	YYLVALREF.objnum.first=strtoll(yytext,&textpos,10);
-	YYLVALREF.objnum.second=strtoll(textpos,NULL,10);
+	char offset[11],gen[6];
+	sscanf(yytext,"%s%s",offset,gen);
+	yylval.obj=cJSON_CreateArray();
+	cJSON_AddItemToArray(yylval.obj,cJSON_CreateString(offset));
+	cJSON_AddItemToArray(yylval.obj,cJSON_CreateString(gen));
+	cJSON_AddItemToArray(yylval.obj,cJSON_CreateString("f"));
 	return FXREFENTRY;
 }
 ^{d}{10}{space}+{d}{5}{space}+n{space}*{EOL} {
-	
-	pos+=yyleng;
-	
-	{char*textpos;
-	YYLVALREF.objnum.first=strtoll(yytext,&textpos,10);
-	YYLVALREF.objnum.second=strtoll(textpos,NULL,10);
-	return NXREFENTRY;}
+	char offset[11],gen[6];
+	sscanf(yytext,"%s%s",offset,gen);
+	yylval.obj=cJSON_CreateArray();
+	cJSON_AddItemToArray(yylval.obj,cJSON_CreateString(offset));
+	cJSON_AddItemToArray(yylval.obj,cJSON_CreateString(gen));
+	cJSON_AddItemToArray(yylval.obj,cJSON_CreateString("n"));
+	return NXREFENTRY;
 }
 {INT}   {
-	
-	pos+=yyleng;
-	
-	{YYLVALREF.integer=malloc(sizeof(pdInteger));
-	*(YYLVALREF.integer)=atoll(yytext);
-	return INTEGER;}
-}
+	yylval.obj=cJSON_CreateString(yytext);
+	return INTEGER;
+	}
 {f}     {
-	
-	pos+=yyleng;
-	
-	{YYLVALREF.real=malloc(sizeof(pdReal));
-	*(YYLVALREF.real)=atof(yytext);
-	return REAL;}
-}
+	yylval.obj=cJSON_CreateString(yytext);
+	return REAL;
+	}
 {name} {
-	
-	pos+=yyleng;
-	
-	{YYLVALREF.name=malloc(yyleng);
-	memcpy(YYLVALREF.name,yytext+1,yyleng-1);
-	YYLVALREF.name[yyleng-1]='\0';
-	return NAME;}
+	yylval.obj=cJSON_CreateString(yytext+1);
+	return NAME;
 }
 
 {xstring} {
-	
-	pos+=yyleng;
-	
-	{YYLVALREF.xstring=malloc(sizeof(pdXString));
-	YYLVALREF.xstring->bufferSize=yyleng-2;
-	YYLVALREF.xstring->buffer=malloc(yyleng-1);
-	memcpy(YYLVALREF.xstring->buffer,yytext+1,yyleng-2);
-	YYLVALREF.xstring->buffer[yyleng-2]='\0';
-	return XSTRING;}
+	yytext[yyleng-1]='\0';
+	yylval.obj=cJSON_CreateString(yytext+1);
+	return XSTRING;
 }
 {OBJ} {
-	
-	pos+=yyleng;
-	
-	{char*textpos;
-	YYLVALREF.objnum.first=strtoll(yytext,&textpos,10);
-	YYLVALREF.objnum.second=strtoll(textpos,NULL,10);
-	return OBJ;}
+	char **arr=malloc(sizeof(char*)*2);
+	arr[0]=malloc(yyleng+1);
+	arr[1]=malloc(yyleng+1);
+	sscanf(yytext,"%s%s",arr[0],arr[1]);
+	yylval.obj=cJSON_CreateStringArray((const char *const *)arr,2);
+	free(arr[0]);free(arr[1]);
+	return OBJ;
 }
 {INDIRECTOBJREF} {
-	
-	pos+=yyleng;
-	
-	{char*textpos;
-	YYLVALREF.objnum.first=strtoll(yytext,&textpos,10);
-	YYLVALREF.objnum.second=strtoll(textpos,NULL,10);
-	return INDIRECTOBJREF;}
+	char **arr=malloc(sizeof(char*)*2);
+	arr[0]=malloc(yyleng+1);
+	arr[1]=malloc(yyleng+1);
+	sscanf(yytext,"%s%s",arr[0],arr[1]);
+	yylval.obj=cJSON_CreateObject();
+	cJSON_AddItemToObject(yylval.obj,"R",cJSON_CreateStringArray((const char *const *)arr,2));
+	free(arr[0]);free(arr[1]);
+	return INDIRECTOBJREF;
 }
-endobj {
-	
-	pos+=yyleng;
-//printf("%s\t%d\n",yytext,ftell(yyin));
+endobj {return ENDOBJ;}
 
-	
-	return ENDOBJ;
-}
+trailer {return TRAILER;}
 
-trailer {
-	
-	pos+=yyleng;
-	
-	return TRAILER;
-}
-
-{LD} {
-	
-	pos+=yyleng;
-	
-	return LD;
-}
-{RD} {
-	
-	pos+=yyleng;
-	
-	return RD;
-}
-{LA} {
-	
-	pos+=yyleng;
-	
-	return '[';
-}
-{RA} {
-	
-	pos+=yyleng;
-	
-	return ']';
-}
-null {
-	
-	pos+=yyleng;
-	
-	return PDNULL;
-}
+{LD} {return LD;}
+{RD} {return RD;}
+{LA} {return '[';}
+{RA} {return ']';}
+null {return PDNULL;}
 stream{space}*{EOL}*{space}* {
 	BEGIN(ENTERSTREAM);
-	streamFileName=tmpStreamFile();
-	streamFile= fopen(streamFileName,"wb+");
-pos+=yyleng;
-return STREAM;
+	sprintf(name,"%s/%d",cJSON_GetStringValue(cJSON_GetObjectItem(pdfObjOfJsonCache,"stream")),n++);
+	stream=fopen(name,"wb");
+	return STREAM;
 }
 <ENTERSTREAM>{space}*{EOL}*{space}*endstream {
 	BEGIN(INITIAL);
-PdStream stream=malloc(sizeof(pdStream));
-stream->bufferSize=ftell(streamFile);
-	rewind(streamFile);
-stream->buffer=malloc(stream->bufferSize+1);
-fread(stream->buffer,1,stream->bufferSize,streamFile);
-stream->buffer[stream->bufferSize]='\0';
-	fclose(streamFile);
-	remove(streamFileName);
-	YYLVALREF.stream=stream;
-pos+=yyleng + stream->bufferSize;
-return ENDSTREAM;
+	long length=ftell(stream);
+	yylval.obj=cJSON_CreateObject();
+	if(length!=-1l)
+	{
+	cJSON_AddItemToObject(yylval.obj,"stream",cJSON_CreateString(name));
+	}else{
+	cJSON_AddItemToObject(yylval.obj,"stream",cJSON_CreateString("streamPath"));
+	}
+	fclose(stream);
+	stream=NULL;
+	return ENDSTREAM;
 }
 
 <ENTERSTREAM>.|{EOL} {
-	fwrite(yytext,1,yyleng,streamFile);
+	fwrite(yytext,1,yyleng,stream);
 }
 \( {
 	BEGIN(ENTERSTRING);
-	streamFileName=tmpStreamFile();
-	streamFile= fopen(streamFileName,"wb+");
-	pos+=yyleng;
+	stream=tmpfile();
 }
 <ENTERSTRING>\\{EOL} {}
-<ENTERSTRING>\\{d}{3} {fwrite(yytext,1,yyleng,streamFile);}
-<ENTERSTRING>[^\)\r\n\\]+ {fwrite(yytext,1,yyleng,streamFile);}
-<ENTERSTRING>\\. {fwrite(yytext,1,yyleng,streamFile);}
+<ENTERSTRING>\\{d}{3} {fwrite(yytext,1,yyleng,stream);}
+<ENTERSTRING>[^\)\r\n\\]+ {fwrite(yytext,1,yyleng,stream);}
+<ENTERSTRING>\\. {fwrite(yytext,1,yyleng,stream);}
 <ENTERSTRING>\) {
 	BEGIN(INITIAL);
-	PdString str=malloc(sizeof(pdString));
-	str->bufferSize=ftell(streamFile);
-	str->buffer=malloc(str->bufferSize+1);
-	rewind(streamFile);
-	fread(str->buffer,1,str->bufferSize,streamFile);
-	str->buffer[str->bufferSize]='\0';
-	fclose(streamFile);
-	YYLVALREF.string=str;
+	long length = ftell(stream);
+	rewind(stream);
+	char*buffer=malloc(length+1);
+	fread(buffer,1,length,stream);
+	fclose(stream);
+	stream=NULL;
+	yylval.obj=cJSON_CreateString(buffer);
+	free(buffer);
 	return STRING;
 	}
 startxref {
-pos+=yyleng;
-
-return STARTXREF;
+	return STARTXREF;
 }
-%.*{EOL} {pos+=yyleng;}
+%.*{EOL} {}
 
 %%
 int yywrap()

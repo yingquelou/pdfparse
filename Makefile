@@ -1,4 +1,2 @@
 cur:
-	rm -rf build
-	cmake -B build
-	make -C build
+	make -C bisonLex

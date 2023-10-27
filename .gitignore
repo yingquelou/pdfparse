@@ -5,3 +5,9 @@ build
 *.dot
 *.exe
 *.a
+*.gv
+*json
+bin
+cache
+tmp*
+data

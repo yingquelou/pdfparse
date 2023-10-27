@@ -1,12 +1,6 @@
-#ifndef pdfHEADER_H
-#define pdfHEADER_H 1
-#define pdfIN_HEADER 1
-
-#define YYINREF pdfin
-#define YYOUTREF pdfout
-#define YYLVALREF pdflval
-#define YACCHEADFILE "pdf.tab.h"
-#include YACCHEADFILE
+#ifndef yyHEADER_H
+#define yyHEADER_H 1
+#define yyIN_HEADER 1
 
 #define  YY_INT_ALIGNED short int
 
@@ -18,240 +12,6 @@
 #define YY_FLEX_SUBMINOR_VERSION 4
 #if YY_FLEX_SUBMINOR_VERSION > 0
 #define FLEX_BETA
-#endif
-
-#ifdef yy_create_buffer
-#define pdf_create_buffer_ALREADY_DEFINED
-#else
-#define yy_create_buffer pdf_create_buffer
-#endif
-
-#ifdef yy_delete_buffer
-#define pdf_delete_buffer_ALREADY_DEFINED
-#else
-#define yy_delete_buffer pdf_delete_buffer
-#endif
-
-#ifdef yy_scan_buffer
-#define pdf_scan_buffer_ALREADY_DEFINED
-#else
-#define yy_scan_buffer pdf_scan_buffer
-#endif
-
-#ifdef yy_scan_string
-#define pdf_scan_string_ALREADY_DEFINED
-#else
-#define yy_scan_string pdf_scan_string
-#endif
-
-#ifdef yy_scan_bytes
-#define pdf_scan_bytes_ALREADY_DEFINED
-#else
-#define yy_scan_bytes pdf_scan_bytes
-#endif
-
-#ifdef yy_init_buffer
-#define pdf_init_buffer_ALREADY_DEFINED
-#else
-#define yy_init_buffer pdf_init_buffer
-#endif
-
-#ifdef yy_flush_buffer
-#define pdf_flush_buffer_ALREADY_DEFINED
-#else
-#define yy_flush_buffer pdf_flush_buffer
-#endif
-
-#ifdef yy_load_buffer_state
-#define pdf_load_buffer_state_ALREADY_DEFINED
-#else
-#define yy_load_buffer_state pdf_load_buffer_state
-#endif
-
-#ifdef yy_switch_to_buffer
-#define pdf_switch_to_buffer_ALREADY_DEFINED
-#else
-#define yy_switch_to_buffer pdf_switch_to_buffer
-#endif
-
-#ifdef yypush_buffer_state
-#define pdfpush_buffer_state_ALREADY_DEFINED
-#else
-#define yypush_buffer_state pdfpush_buffer_state
-#endif
-
-#ifdef yypop_buffer_state
-#define pdfpop_buffer_state_ALREADY_DEFINED
-#else
-#define yypop_buffer_state pdfpop_buffer_state
-#endif
-
-#ifdef yyensure_buffer_stack
-#define pdfensure_buffer_stack_ALREADY_DEFINED
-#else
-#define yyensure_buffer_stack pdfensure_buffer_stack
-#endif
-
-#ifdef yylex
-#define pdflex_ALREADY_DEFINED
-#else
-#define yylex pdflex
-#endif
-
-#ifdef yyrestart
-#define pdfrestart_ALREADY_DEFINED
-#else
-#define yyrestart pdfrestart
-#endif
-
-#ifdef yylex_init
-#define pdflex_init_ALREADY_DEFINED
-#else
-#define yylex_init pdflex_init
-#endif
-
-#ifdef yylex_init_extra
-#define pdflex_init_extra_ALREADY_DEFINED
-#else
-#define yylex_init_extra pdflex_init_extra
-#endif
-
-#ifdef yylex_destroy
-#define pdflex_destroy_ALREADY_DEFINED
-#else
-#define yylex_destroy pdflex_destroy
-#endif
-
-#ifdef yyget_debug
-#define pdfget_debug_ALREADY_DEFINED
-#else
-#define yyget_debug pdfget_debug
-#endif
-
-#ifdef yyset_debug
-#define pdfset_debug_ALREADY_DEFINED
-#else
-#define yyset_debug pdfset_debug
-#endif
-
-#ifdef yyget_extra
-#define pdfget_extra_ALREADY_DEFINED
-#else
-#define yyget_extra pdfget_extra
-#endif
-
-#ifdef yyset_extra
-#define pdfset_extra_ALREADY_DEFINED
-#else
-#define yyset_extra pdfset_extra
-#endif
-
-#ifdef yyget_in
-#define pdfget_in_ALREADY_DEFINED
-#else
-#define yyget_in pdfget_in
-#endif
-
-#ifdef yyset_in
-#define pdfset_in_ALREADY_DEFINED
-#else
-#define yyset_in pdfset_in
-#endif
-
-#ifdef yyget_out
-#define pdfget_out_ALREADY_DEFINED
-#else
-#define yyget_out pdfget_out
-#endif
-
-#ifdef yyset_out
-#define pdfset_out_ALREADY_DEFINED
-#else
-#define yyset_out pdfset_out
-#endif
-
-#ifdef yyget_leng
-#define pdfget_leng_ALREADY_DEFINED
-#else
-#define yyget_leng pdfget_leng
-#endif
-
-#ifdef yyget_text
-#define pdfget_text_ALREADY_DEFINED
-#else
-#define yyget_text pdfget_text
-#endif
-
-#ifdef yyget_lineno
-#define pdfget_lineno_ALREADY_DEFINED
-#else
-#define yyget_lineno pdfget_lineno
-#endif
-
-#ifdef yyset_lineno
-#define pdfset_lineno_ALREADY_DEFINED
-#else
-#define yyset_lineno pdfset_lineno
-#endif
-
-#ifdef yywrap
-#define pdfwrap_ALREADY_DEFINED
-#else
-#define yywrap pdfwrap
-#endif
-
-#ifdef yyalloc
-#define pdfalloc_ALREADY_DEFINED
-#else
-#define yyalloc pdfalloc
-#endif
-
-#ifdef yyrealloc
-#define pdfrealloc_ALREADY_DEFINED
-#else
-#define yyrealloc pdfrealloc
-#endif
-
-#ifdef yyfree
-#define pdffree_ALREADY_DEFINED
-#else
-#define yyfree pdffree
-#endif
-
-#ifdef yytext
-#define pdftext_ALREADY_DEFINED
-#else
-#define yytext pdftext
-#endif
-
-#ifdef yyleng
-#define pdfleng_ALREADY_DEFINED
-#else
-#define yyleng pdfleng
-#endif
-
-#ifdef yyin
-#define pdfin_ALREADY_DEFINED
-#else
-#define yyin pdfin
-#endif
-
-#ifdef yyout
-#define pdfout_ALREADY_DEFINED
-#else
-#define yyout pdfout
-#endif
-
-#ifdef yy_flex_debug
-#define pdf_flex_debug_ALREADY_DEFINED
-#else
-#define yy_flex_debug pdf_flex_debug
-#endif
-
-#ifdef yylineno
-#define pdflineno_ALREADY_DEFINED
-#else
-#define yylineno pdflineno
 #endif
 
 /* First, we deal with  platform-specific or compiler-specific issues. */
@@ -461,7 +221,7 @@ extern char *yytext;
  */
 #include <unistd.h>
 #endif
-    
+
 #ifndef YY_EXTRA_TYPE
 #define YY_EXTRA_TYPE void *
 #endif
@@ -559,150 +319,150 @@ extern int yylex (void);
 #undef YY_DECL
 #endif
 
-#ifndef pdf_create_buffer_ALREADY_DEFINED
+#ifndef yy_create_buffer_ALREADY_DEFINED
 #undef yy_create_buffer
 #endif
-#ifndef pdf_delete_buffer_ALREADY_DEFINED
+#ifndef yy_delete_buffer_ALREADY_DEFINED
 #undef yy_delete_buffer
 #endif
-#ifndef pdf_scan_buffer_ALREADY_DEFINED
+#ifndef yy_scan_buffer_ALREADY_DEFINED
 #undef yy_scan_buffer
 #endif
-#ifndef pdf_scan_string_ALREADY_DEFINED
+#ifndef yy_scan_string_ALREADY_DEFINED
 #undef yy_scan_string
 #endif
-#ifndef pdf_scan_bytes_ALREADY_DEFINED
+#ifndef yy_scan_bytes_ALREADY_DEFINED
 #undef yy_scan_bytes
 #endif
-#ifndef pdf_init_buffer_ALREADY_DEFINED
+#ifndef yy_init_buffer_ALREADY_DEFINED
 #undef yy_init_buffer
 #endif
-#ifndef pdf_flush_buffer_ALREADY_DEFINED
+#ifndef yy_flush_buffer_ALREADY_DEFINED
 #undef yy_flush_buffer
 #endif
-#ifndef pdf_load_buffer_state_ALREADY_DEFINED
+#ifndef yy_load_buffer_state_ALREADY_DEFINED
 #undef yy_load_buffer_state
 #endif
-#ifndef pdf_switch_to_buffer_ALREADY_DEFINED
+#ifndef yy_switch_to_buffer_ALREADY_DEFINED
 #undef yy_switch_to_buffer
 #endif
-#ifndef pdfpush_buffer_state_ALREADY_DEFINED
+#ifndef yypush_buffer_state_ALREADY_DEFINED
 #undef yypush_buffer_state
 #endif
-#ifndef pdfpop_buffer_state_ALREADY_DEFINED
+#ifndef yypop_buffer_state_ALREADY_DEFINED
 #undef yypop_buffer_state
 #endif
-#ifndef pdfensure_buffer_stack_ALREADY_DEFINED
+#ifndef yyensure_buffer_stack_ALREADY_DEFINED
 #undef yyensure_buffer_stack
 #endif
-#ifndef pdflex_ALREADY_DEFINED
+#ifndef yylex_ALREADY_DEFINED
 #undef yylex
 #endif
-#ifndef pdfrestart_ALREADY_DEFINED
+#ifndef yyrestart_ALREADY_DEFINED
 #undef yyrestart
 #endif
-#ifndef pdflex_init_ALREADY_DEFINED
+#ifndef yylex_init_ALREADY_DEFINED
 #undef yylex_init
 #endif
-#ifndef pdflex_init_extra_ALREADY_DEFINED
+#ifndef yylex_init_extra_ALREADY_DEFINED
 #undef yylex_init_extra
 #endif
-#ifndef pdflex_destroy_ALREADY_DEFINED
+#ifndef yylex_destroy_ALREADY_DEFINED
 #undef yylex_destroy
 #endif
-#ifndef pdfget_debug_ALREADY_DEFINED
+#ifndef yyget_debug_ALREADY_DEFINED
 #undef yyget_debug
 #endif
-#ifndef pdfset_debug_ALREADY_DEFINED
+#ifndef yyset_debug_ALREADY_DEFINED
 #undef yyset_debug
 #endif
-#ifndef pdfget_extra_ALREADY_DEFINED
+#ifndef yyget_extra_ALREADY_DEFINED
 #undef yyget_extra
 #endif
-#ifndef pdfset_extra_ALREADY_DEFINED
+#ifndef yyset_extra_ALREADY_DEFINED
 #undef yyset_extra
 #endif
-#ifndef pdfget_in_ALREADY_DEFINED
+#ifndef yyget_in_ALREADY_DEFINED
 #undef yyget_in
 #endif
-#ifndef pdfset_in_ALREADY_DEFINED
+#ifndef yyset_in_ALREADY_DEFINED
 #undef yyset_in
 #endif
-#ifndef pdfget_out_ALREADY_DEFINED
+#ifndef yyget_out_ALREADY_DEFINED
 #undef yyget_out
 #endif
-#ifndef pdfset_out_ALREADY_DEFINED
+#ifndef yyset_out_ALREADY_DEFINED
 #undef yyset_out
 #endif
-#ifndef pdfget_leng_ALREADY_DEFINED
+#ifndef yyget_leng_ALREADY_DEFINED
 #undef yyget_leng
 #endif
-#ifndef pdfget_text_ALREADY_DEFINED
+#ifndef yyget_text_ALREADY_DEFINED
 #undef yyget_text
 #endif
-#ifndef pdfget_lineno_ALREADY_DEFINED
+#ifndef yyget_lineno_ALREADY_DEFINED
 #undef yyget_lineno
 #endif
-#ifndef pdfset_lineno_ALREADY_DEFINED
+#ifndef yyset_lineno_ALREADY_DEFINED
 #undef yyset_lineno
 #endif
-#ifndef pdfget_column_ALREADY_DEFINED
+#ifndef yyget_column_ALREADY_DEFINED
 #undef yyget_column
 #endif
-#ifndef pdfset_column_ALREADY_DEFINED
+#ifndef yyset_column_ALREADY_DEFINED
 #undef yyset_column
 #endif
-#ifndef pdfwrap_ALREADY_DEFINED
+#ifndef yywrap_ALREADY_DEFINED
 #undef yywrap
 #endif
-#ifndef pdfget_lval_ALREADY_DEFINED
+#ifndef yyget_lval_ALREADY_DEFINED
 #undef yyget_lval
 #endif
-#ifndef pdfset_lval_ALREADY_DEFINED
+#ifndef yyset_lval_ALREADY_DEFINED
 #undef yyset_lval
 #endif
-#ifndef pdfget_lloc_ALREADY_DEFINED
+#ifndef yyget_lloc_ALREADY_DEFINED
 #undef yyget_lloc
 #endif
-#ifndef pdfset_lloc_ALREADY_DEFINED
+#ifndef yyset_lloc_ALREADY_DEFINED
 #undef yyset_lloc
 #endif
-#ifndef pdfalloc_ALREADY_DEFINED
+#ifndef yyalloc_ALREADY_DEFINED
 #undef yyalloc
 #endif
-#ifndef pdfrealloc_ALREADY_DEFINED
+#ifndef yyrealloc_ALREADY_DEFINED
 #undef yyrealloc
 #endif
-#ifndef pdffree_ALREADY_DEFINED
+#ifndef yyfree_ALREADY_DEFINED
 #undef yyfree
 #endif
-#ifndef pdftext_ALREADY_DEFINED
+#ifndef yytext_ALREADY_DEFINED
 #undef yytext
 #endif
-#ifndef pdfleng_ALREADY_DEFINED
+#ifndef yyleng_ALREADY_DEFINED
 #undef yyleng
 #endif
-#ifndef pdfin_ALREADY_DEFINED
+#ifndef yyin_ALREADY_DEFINED
 #undef yyin
 #endif
-#ifndef pdfout_ALREADY_DEFINED
+#ifndef yyout_ALREADY_DEFINED
 #undef yyout
 #endif
-#ifndef pdf_flex_debug_ALREADY_DEFINED
+#ifndef yy_flex_debug_ALREADY_DEFINED
 #undef yy_flex_debug
 #endif
-#ifndef pdflineno_ALREADY_DEFINED
+#ifndef yylineno_ALREADY_DEFINED
 #undef yylineno
 #endif
-#ifndef pdftables_fload_ALREADY_DEFINED
+#ifndef yytables_fload_ALREADY_DEFINED
 #undef yytables_fload
 #endif
-#ifndef pdftables_destroy_ALREADY_DEFINED
+#ifndef yytables_destroy_ALREADY_DEFINED
 #undef yytables_destroy
 #endif
-#ifndef pdfTABLES_NAME_ALREADY_DEFINED
+#ifndef yyTABLES_NAME_ALREADY_DEFINED
 #undef yyTABLES_NAME
 #endif
 
-#undef pdfIN_HEADER
-#endif /* pdfHEADER_H */
+#undef yyIN_HEADER
+#endif /* yyHEADER_H */

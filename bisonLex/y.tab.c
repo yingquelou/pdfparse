@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.7.4.  */
+/* A Bison parser, made by GNU Bison 3.8.2.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2020 Free Software Foundation,
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2021 Free Software Foundation,
    Inc.
 
    This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -46,10 +46,10 @@
    USER NAME SPACE" below.  */
 
 /* Identify Bison output, and Bison version.  */
-#define YYBISON 30704
+#define YYBISON 30802
 
 /* Bison version string.  */
-#define YYBISON_VERSION "3.7.4"
+#define YYBISON_VERSION "3.8.2"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -64,25 +64,17 @@
 #define YYPULL 1
 
 
-/* Substitute the variable and function names.  */
-#define yyparse         pdfparse
-#define yylex           pdflex
-#define yyerror         pdferror
-#define yydebug         pdfdebug
-#define yynerrs         pdfnerrs
-#define yylval          pdflval
-#define yychar          pdfchar
+
 
 /* First part of user prologue.  */
 
-int yyerror(char *s);
-#include "Pdocument.h"
-#include "listd.h"
-#include <stdio.h>
-//extern int yydebug;
-extern long long pos;
-ListD finalList=NULL;
-char **initCacheIndex();
+#include<cjson/cJSON.h>
+#include"lex.yy.h"
+cJSON *cJSON_ConvertArrayToObject(cJSON *);
+cJSON *pdfObjOfJsonCache=NULL;
+int n=0;
+char name[FILENAME_MAX];
+int yyerror(char *);
 
 
 # ifndef YY_CAST
@@ -106,7 +98,98 @@ char **initCacheIndex();
 #  endif
 # endif
 
-#include "lex.pdf.h"
+/* Use api.header.include to #include this header
+   instead of duplicating it here.  */
+#ifndef YY_YY_Y_TAB_H_INCLUDED
+# define YY_YY_Y_TAB_H_INCLUDED
+/* Debug traces.  */
+#ifndef YYDEBUG
+# define YYDEBUG 0
+#endif
+#if YYDEBUG
+extern int yydebug;
+#endif
+
+/* Token kinds.  */
+#ifndef YYTOKENTYPE
+# define YYTOKENTYPE
+  enum yytokentype
+  {
+    YYEMPTY = -2,
+    YYEOF = 0,                     /* "end of file"  */
+    YYerror = 256,                 /* error  */
+    YYUNDEF = 257,                 /* "invalid token"  */
+    PDNULL = 258,                  /* PDNULL  */
+    BOOLEAN = 259,                 /* BOOLEAN  */
+    INTEGER = 260,                 /* INTEGER  */
+    REAL = 261,                    /* REAL  */
+    STRING = 262,                  /* STRING  */
+    XSTRING = 263,                 /* XSTRING  */
+    NAME = 264,                    /* NAME  */
+    STREAM = 265,                  /* STREAM  */
+    ENDOBJ = 266,                  /* ENDOBJ  */
+    LD = 267,                      /* LD  */
+    RD = 268,                      /* RD  */
+    XREF = 269,                    /* XREF  */
+    TRAILER = 270,                 /* TRAILER  */
+    STARTXREF = 271,               /* STARTXREF  */
+    ENDSTREAM = 272,               /* ENDSTREAM  */
+    OBJ = 273,                     /* OBJ  */
+    INDIRECTOBJREF = 274,          /* INDIRECTOBJREF  */
+    NXREFENTRY = 275,              /* NXREFENTRY  */
+    FXREFENTRY = 276,              /* FXREFENTRY  */
+    SUBXREFHEAD = 277              /* SUBXREFHEAD  */
+  };
+  typedef enum yytokentype yytoken_kind_t;
+#endif
+/* Token kinds.  */
+#define YYEMPTY -2
+#define YYEOF 0
+#define YYerror 256
+#define YYUNDEF 257
+#define PDNULL 258
+#define BOOLEAN 259
+#define INTEGER 260
+#define REAL 261
+#define STRING 262
+#define XSTRING 263
+#define NAME 264
+#define STREAM 265
+#define ENDOBJ 266
+#define LD 267
+#define RD 268
+#define XREF 269
+#define TRAILER 270
+#define STARTXREF 271
+#define ENDSTREAM 272
+#define OBJ 273
+#define INDIRECTOBJREF 274
+#define NXREFENTRY 275
+#define FXREFENTRY 276
+#define SUBXREFHEAD 277
+
+/* Value type.  */
+#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
+union YYSTYPE
+{
+
+    cJSON *obj;
+
+
+};
+typedef union YYSTYPE YYSTYPE;
+# define YYSTYPE_IS_TRIVIAL 1
+# define YYSTYPE_IS_DECLARED 1
+#endif
+
+
+extern YYSTYPE yylval;
+
+
+int yyparse (void);
+
+
+#endif /* !YY_YY_Y_TAB_H_INCLUDED  */
 /* Symbol kind.  */
 enum yysymbol_kind_t
 {
@@ -114,26 +197,26 @@ enum yysymbol_kind_t
   YYSYMBOL_YYEOF = 0,                      /* "end of file"  */
   YYSYMBOL_YYerror = 1,                    /* error  */
   YYSYMBOL_YYUNDEF = 2,                    /* "invalid token"  */
-  YYSYMBOL_BOOLEAN = 3,                    /* BOOLEAN  */
-  YYSYMBOL_INTEGER = 4,                    /* INTEGER  */
-  YYSYMBOL_REAL = 5,                       /* REAL  */
-  YYSYMBOL_STRING = 6,                     /* STRING  */
-  YYSYMBOL_ENDSTREAM = 7,                  /* ENDSTREAM  */
+  YYSYMBOL_PDNULL = 3,                     /* PDNULL  */
+  YYSYMBOL_BOOLEAN = 4,                    /* BOOLEAN  */
+  YYSYMBOL_INTEGER = 5,                    /* INTEGER  */
+  YYSYMBOL_REAL = 6,                       /* REAL  */
+  YYSYMBOL_STRING = 7,                     /* STRING  */
   YYSYMBOL_XSTRING = 8,                    /* XSTRING  */
   YYSYMBOL_NAME = 9,                       /* NAME  */
-  YYSYMBOL_OBJ = 10,                       /* OBJ  */
-  YYSYMBOL_INDIRECTOBJREF = 11,            /* INDIRECTOBJREF  */
-  YYSYMBOL_NXREFENTRY = 12,                /* NXREFENTRY  */
-  YYSYMBOL_FXREFENTRY = 13,                /* FXREFENTRY  */
-  YYSYMBOL_SUBXREFHEAD = 14,               /* SUBXREFHEAD  */
-  YYSYMBOL_LD = 15,                        /* LD  */
-  YYSYMBOL_RD = 16,                        /* RD  */
-  YYSYMBOL_PDNULL = 17,                    /* PDNULL  */
-  YYSYMBOL_ENDOBJ = 18,                    /* ENDOBJ  */
-  YYSYMBOL_STREAM = 19,                    /* STREAM  */
-  YYSYMBOL_XREF = 20,                      /* XREF  */
-  YYSYMBOL_TRAILER = 21,                   /* TRAILER  */
-  YYSYMBOL_STARTXREF = 22,                 /* STARTXREF  */
+  YYSYMBOL_STREAM = 10,                    /* STREAM  */
+  YYSYMBOL_ENDOBJ = 11,                    /* ENDOBJ  */
+  YYSYMBOL_LD = 12,                        /* LD  */
+  YYSYMBOL_RD = 13,                        /* RD  */
+  YYSYMBOL_XREF = 14,                      /* XREF  */
+  YYSYMBOL_TRAILER = 15,                   /* TRAILER  */
+  YYSYMBOL_STARTXREF = 16,                 /* STARTXREF  */
+  YYSYMBOL_ENDSTREAM = 17,                 /* ENDSTREAM  */
+  YYSYMBOL_OBJ = 18,                       /* OBJ  */
+  YYSYMBOL_INDIRECTOBJREF = 19,            /* INDIRECTOBJREF  */
+  YYSYMBOL_NXREFENTRY = 20,                /* NXREFENTRY  */
+  YYSYMBOL_FXREFENTRY = 21,                /* FXREFENTRY  */
+  YYSYMBOL_SUBXREFHEAD = 22,               /* SUBXREFHEAD  */
   YYSYMBOL_23_ = 23,                       /* '['  */
   YYSYMBOL_24_ = 24,                       /* ']'  */
   YYSYMBOL_YYACCEPT = 25,                  /* $accept  */
@@ -147,7 +230,7 @@ enum yysymbol_kind_t
   YYSYMBOL_DICTIONARY = 33,                /* DICTIONARY  */
   YYSYMBOL_ENTRYSET = 34,                  /* ENTRYSET  */
   YYSYMBOL_INDIRECTOBJ = 35,               /* INDIRECTOBJ  */
-  YYSYMBOL_XREFOBJ = 36,                   /* XREFOBJ  */
+  YYSYMBOL_XREFTABELS = 36,                /* XREFTABELS  */
   YYSYMBOL_SUBXREFLIST = 37,               /* SUBXREFLIST  */
   YYSYMBOL_SUBXREF = 38,                   /* SUBXREF  */
   YYSYMBOL_SUBXREFENTRYLIST = 39           /* SUBXREFENTRYLIST  */
@@ -192,6 +275,18 @@ typedef __INT_LEAST16_TYPE__ yytype_int16;
 typedef int_least16_t yytype_int16;
 #else
 typedef short yytype_int16;
+#endif
+
+/* Work around bug in HP-UX 11.23, which defines these macros
+   incorrectly for preprocessor constants.  This workaround can likely
+   be removed in 2023, as HPE has promised support for HP-UX 11.23
+   (aka HP-UX 11i v2) only through the end of 2022; see Table 2 of
+   <https://h20195.www2.hpe.com/V2/getpdf.aspx/4AA4-7673ENW.pdf>.  */
+#ifdef __hpux
+# undef UINT_LEAST8_MAX
+# undef UINT_LEAST16_MAX
+# define UINT_LEAST8_MAX 255
+# define UINT_LEAST16_MAX 65535
 #endif
 
 #if defined __UINT_LEAST8_MAX__ && __UINT_LEAST8_MAX__ <= __INT_MAX__
@@ -291,17 +386,23 @@ typedef int yy_state_fast_t;
 
 /* Suppress unused-variable warnings by "using" E.  */
 #if ! defined lint || defined __GNUC__
-# define YYUSE(E) ((void) (E))
+# define YY_USE(E) ((void) (E))
 #else
-# define YYUSE(E) /* empty */
+# define YY_USE(E) /* empty */
 #endif
 
-#if defined __GNUC__ && ! defined __ICC && 407 <= __GNUC__ * 100 + __GNUC_MINOR__
 /* Suppress an incorrect diagnostic about yylval being uninitialized.  */
-# define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN                            \
+#if defined __GNUC__ && ! defined __ICC && 406 <= __GNUC__ * 100 + __GNUC_MINOR__
+# if __GNUC__ * 100 + __GNUC_MINOR__ < 407
+#  define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN                           \
+    _Pragma ("GCC diagnostic push")                                     \
+    _Pragma ("GCC diagnostic ignored \"-Wuninitialized\"")
+# else
+#  define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN                           \
     _Pragma ("GCC diagnostic push")                                     \
     _Pragma ("GCC diagnostic ignored \"-Wuninitialized\"")              \
     _Pragma ("GCC diagnostic ignored \"-Wmaybe-uninitialized\"")
+# endif
 # define YY_IGNORE_MAYBE_UNINITIALIZED_END      \
     _Pragma ("GCC diagnostic pop")
 #else
@@ -460,7 +561,7 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  3
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   86
+#define YYLAST   94
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  25
@@ -517,13 +618,13 @@ static const yytype_int8 yytranslate[] =
 };
 
 #if YYDEBUG
-  /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
+/* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    42,    42,    46,    47,    50,    51,    52,    57,    62,
-      67,    72,    78,    79,    87,    92,    99,   104,   109,   114,
-     119,   124,   130,   133,   134,   137,   141,   142,   150,   157,
-     161,   162,   164,   170,   171,   178
+       0,    31,    31,    40,    41,    71,    74,    75,    76,    77,
+      78,    82,    87,    88,    89,    90,    93,    94,    95,    96,
+      97,    98,   100,   103,   104,   107,   113,   114,   121,   127,
+     132,   133,   138,   143,   144,   148
 };
 #endif
 
@@ -539,12 +640,12 @@ static const char *yysymbol_name (yysymbol_kind_t yysymbol) YY_ATTRIBUTE_UNUSED;
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
 {
-  "\"end of file\"", "error", "\"invalid token\"", "BOOLEAN", "INTEGER",
-  "REAL", "STRING", "ENDSTREAM", "XSTRING", "NAME", "OBJ",
-  "INDIRECTOBJREF", "NXREFENTRY", "FXREFENTRY", "SUBXREFHEAD", "LD", "RD",
-  "PDNULL", "ENDOBJ", "STREAM", "XREF", "TRAILER", "STARTXREF", "'['",
+  "\"end of file\"", "error", "\"invalid token\"", "PDNULL", "BOOLEAN",
+  "INTEGER", "REAL", "STRING", "XSTRING", "NAME", "STREAM", "ENDOBJ", "LD",
+  "RD", "XREF", "TRAILER", "STARTXREF", "ENDSTREAM", "OBJ",
+  "INDIRECTOBJREF", "NXREFENTRY", "FXREFENTRY", "SUBXREFHEAD", "'['",
   "']'", "$accept", "main", "OBJLIST", "OBJREF", "KEY", "BASEOBJ", "ARRAY",
-  "LIST", "DICTIONARY", "ENTRYSET", "INDIRECTOBJ", "XREFOBJ",
+  "LIST", "DICTIONARY", "ENTRYSET", "INDIRECTOBJ", "XREFTABELS",
   "SUBXREFLIST", "SUBXREF", "SUBXREFENTRYLIST", YY_NULLPTR
 };
 
@@ -555,18 +656,7 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 }
 #endif
 
-#ifdef YYPRINT
-/* YYTOKNUM[NUM] -- (External) token number corresponding to the
-   (internal) symbol number NUM (which must be that of a token).  */
-static const yytype_int16 yytoknum[] =
-{
-       0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
-     265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
-     275,   276,   277,    91,    93
-};
-#endif
-
-#define YYPACT_NINF (-10)
+#define YYPACT_NINF (-8)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -576,84 +666,86 @@ static const yytype_int16 yytoknum[] =
 #define yytable_value_is_error(Yyn) \
   0
 
-  /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
-     STATE-NUM.  */
+/* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
+   STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-     -10,     1,    42,   -10,   -10,   -10,   -10,   -10,   -10,   -10,
-     -10,   -10,   -10,   -10,     4,   -10,    -9,    11,   -10,   -10,
-     -10,   -10,   -10,   -10,   -10,   -10,    21,    63,   -10,     3,
-     -10,   -10,    -1,   -10,   -10,   -10,    42,   -10,   -10,   -10,
-     -10,     0,   -10,   -10
+      -8,     1,    51,    -8,    -8,    -8,    -8,    -8,    -8,    -8,
+      -8,    -7,    -8,    -8,     4,     7,    -8,    -8,    -8,    -8,
+      -8,    -8,    -8,    -8,    -8,    -8,    -8,    71,    -3,    -8,
+      -8,    30,    -1,    -8,    51,    -8,    -8,    -8,    -8,    -8,
+      -8,     0,    -8,    -8
 };
 
-  /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
-     Performed when YYTABLE does not specify something else to do.  Zero
-     means the default is an error.  */
+/* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
+   Performed when YYTABLE does not specify something else to do.  Zero
+   means the default is an error.  */
 static const yytype_int8 yydefact[] =
 {
-       3,     0,     2,     1,    16,    17,    18,    19,    20,    21,
-      23,    13,    26,     5,     0,    30,     0,     0,    23,     4,
-       6,    12,    14,    15,     7,     8,     0,     0,     9,    29,
-      10,    11,     0,    28,    24,    25,     0,    33,    31,    22,
+       3,     0,     2,     1,     5,    16,    17,    18,    19,    20,
+      21,     0,    26,    30,     0,     0,    23,    13,    23,     4,
+       6,    12,    14,    15,     7,     8,     9,     0,    29,    10,
+      11,     0,     0,    25,     0,    33,    31,    28,    24,    22,
       27,    32,    35,    34
 };
 
-  /* YYPGOTO[NTERM-NUM].  */
+/* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -10,   -10,   -10,    -2,     6,   -10,   -10,    10,    19,   -10,
-     -10,   -10,   -10,   -10,   -10
+      -8,    -8,    -8,    -2,     2,    -8,    -8,     6,    11,    -8,
+      -8,    -8,    -8,    -8,    -8
 };
 
-  /* YYDEFGOTO[NTERM-NUM].  */
+/* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-      -1,     1,     2,    34,    20,    21,    22,    26,    23,    27,
-      24,    25,    29,    38,    41
+       0,     1,     2,    38,    20,    21,    22,    31,    23,    27,
+      24,    25,    28,    36,    41
 };
 
-  /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
-     positive, shift that token.  If negative, reduce the rule whose
-     number is the opposite.  If YYTABLE_NINF, syntax error.  */
+/* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
+   positive, shift that token.  If negative, reduce the rule whose
+   number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-      19,     3,     4,     5,     6,     7,    12,     8,     9,    10,
-      11,    28,    42,    43,    12,    31,    13,    37,    14,    15,
-      16,    17,    18,    39,     4,     5,     6,     7,    32,     8,
-       9,    10,    11,    36,    40,    30,    12,     0,    13,    33,
-      14,    15,    16,    17,    18,     4,     5,     6,     7,     0,
-       8,     9,    10,    11,     0,     0,     0,    12,     0,    13,
-       0,    14,    15,    16,    17,    18,     4,     5,     6,     7,
-       0,     8,     9,     0,    11,     0,     0,     0,    12,    35,
-       0,     0,     0,     0,     0,     0,    18
+      19,     3,     4,     5,     6,     7,     8,     9,    10,    11,
+      26,    12,    30,    13,    14,    15,    12,    16,    17,    35,
+      42,    43,    18,    39,    32,    29,     0,     0,     0,    34,
+       0,     0,    40,     4,     5,     6,     7,     8,     9,    10,
+      11,    37,    12,     0,    13,    14,    15,     0,    16,    17,
+       0,     0,     0,    18,     4,     5,     6,     7,     8,     9,
+      10,    11,     0,    12,     0,    13,    14,    15,     0,    16,
+      17,     0,     0,     0,    18,     5,     6,     7,     8,     9,
+      10,     0,     0,    12,    33,     0,     0,     0,     0,     0,
+      17,     0,     0,     0,    18
 };
 
 static const yytype_int8 yycheck[] =
 {
-       2,     0,     3,     4,     5,     6,    15,     8,     9,    10,
-      11,     7,    12,    13,    15,     4,    17,    14,    19,    20,
-      21,    22,    23,    24,     3,     4,     5,     6,    18,     8,
-       9,    10,    11,    27,    36,    16,    15,    -1,    17,    18,
-      19,    20,    21,    22,    23,     3,     4,     5,     6,    -1,
-       8,     9,    10,    11,    -1,    -1,    -1,    15,    -1,    17,
-      -1,    19,    20,    21,    22,    23,     3,     4,     5,     6,
-      -1,     8,     9,    -1,    11,    -1,    -1,    -1,    15,    16,
-      -1,    -1,    -1,    -1,    -1,    -1,    23
+       2,     0,     3,     4,     5,     6,     7,     8,     9,    10,
+      17,    12,     5,    14,    15,    16,    12,    18,    19,    22,
+      20,    21,    23,    24,    18,    14,    -1,    -1,    -1,    27,
+      -1,    -1,    34,     3,     4,     5,     6,     7,     8,     9,
+      10,    11,    12,    -1,    14,    15,    16,    -1,    18,    19,
+      -1,    -1,    -1,    23,     3,     4,     5,     6,     7,     8,
+       9,    10,    -1,    12,    -1,    14,    15,    16,    -1,    18,
+      19,    -1,    -1,    -1,    23,     4,     5,     6,     7,     8,
+       9,    -1,    -1,    12,    13,    -1,    -1,    -1,    -1,    -1,
+      19,    -1,    -1,    -1,    23
 };
 
-  /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
-     symbol of state STATE-NUM.  */
+/* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
+   state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
-       0,    26,    27,     0,     3,     4,     5,     6,     8,     9,
-      10,    11,    15,    17,    19,    20,    21,    22,    23,    28,
-      29,    30,    31,    33,    35,    36,    32,    34,     7,    37,
-      33,     4,    32,    18,    28,    16,    29,    14,    38,    24,
-      28,    39,    12,    13
+       0,    26,    27,     0,     3,     4,     5,     6,     7,     8,
+       9,    10,    12,    14,    15,    16,    18,    19,    23,    28,
+      29,    30,    31,    33,    35,    36,    17,    34,    37,    33,
+       5,    32,    32,    13,    29,    22,    38,    11,    28,    24,
+      28,    39,    20,    21
 };
 
-  /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
+/* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr1[] =
 {
        0,    25,    26,    27,    27,    28,    28,    28,    28,    28,
@@ -662,7 +754,7 @@ static const yytype_int8 yyr1[] =
       37,    37,    38,    39,    39,    39
 };
 
-  /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
+/* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr2[] =
 {
        0,     2,     1,     0,     2,     1,     1,     1,     1,     2,
@@ -680,6 +772,7 @@ enum { YYENOMEM = -2 };
 #define YYACCEPT        goto yyacceptlab
 #define YYABORT         goto yyabortlab
 #define YYERROR         goto yyerrorlab
+#define YYNOMEM         goto yyexhaustedlab
 
 
 #define YYRECOVERING()  (!!yyerrstatus)
@@ -720,10 +813,7 @@ do {                                            \
     YYFPRINTF Args;                             \
 } while (0)
 
-/* This macro is provided for backward compatibility. */
-# ifndef YY_LOCATION_PRINT
-#  define YY_LOCATION_PRINT(File, Loc) ((void) 0)
-# endif
+
 
 
 # define YY_SYMBOL_PRINT(Title, Kind, Value, Location)                    \
@@ -747,15 +837,11 @@ yy_symbol_value_print (FILE *yyo,
                        yysymbol_kind_t yykind, YYSTYPE const * const yyvaluep)
 {
   FILE *yyoutput = yyo;
-  YYUSE (yyoutput);
+  YY_USE (yyoutput);
   if (!yyvaluep)
     return;
-# ifdef YYPRINT
-  if (yykind < YYNTOKENS)
-    YYPRINT (yyo, yytoknum[yykind], *yyvaluep);
-# endif
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
-  YYUSE (yykind);
+  YY_USE (yykind);
   YY_IGNORE_MAYBE_UNINITIALIZED_END
 }
 
@@ -869,13 +955,13 @@ static void
 yydestruct (const char *yymsg,
             yysymbol_kind_t yykind, YYSTYPE *yyvaluep)
 {
-  YYUSE (yyvaluep);
+  YY_USE (yyvaluep);
   if (!yymsg)
     yymsg = "Deleting";
   YY_SYMBOL_PRINT (yymsg, yykind, yyvaluep, yylocationp);
 
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
-  YYUSE (yykind);
+  YY_USE (yykind);
   YY_IGNORE_MAYBE_UNINITIALIZED_END
 }
 
@@ -938,6 +1024,7 @@ yyparse (void)
   YYDPRINTF ((stderr, "Starting parse\n"));
 
   yychar = YYEMPTY; /* Cause a token to be read.  */
+
   goto yysetstate;
 
 
@@ -963,7 +1050,7 @@ yysetstate:
 
   if (yyss + yystacksize - 1 <= yyssp)
 #if !defined yyoverflow && !defined YYSTACK_RELOCATE
-    goto yyexhaustedlab;
+    YYNOMEM;
 #else
     {
       /* Get the current used size of the three stacks, in elements.  */
@@ -991,7 +1078,7 @@ yysetstate:
 # else /* defined YYSTACK_RELOCATE */
       /* Extend the stack our own way.  */
       if (YYMAXDEPTH <= yystacksize)
-        goto yyexhaustedlab;
+        YYNOMEM;
       yystacksize *= 2;
       if (YYMAXDEPTH < yystacksize)
         yystacksize = YYMAXDEPTH;
@@ -1002,7 +1089,7 @@ yysetstate:
           YY_CAST (union yyalloc *,
                    YYSTACK_ALLOC (YY_CAST (YYSIZE_T, YYSTACK_BYTES (yystacksize))));
         if (! yyptr)
-          goto yyexhaustedlab;
+          YYNOMEM;
         YYSTACK_RELOCATE (yyss_alloc, yyss);
         YYSTACK_RELOCATE (yyvs_alloc, yyvs);
 #  undef YYSTACK_RELOCATE
@@ -1023,6 +1110,7 @@ yysetstate:
         YYABORT;
     }
 #endif /* !defined yyoverflow && !defined YYSTACK_RELOCATE */
+
 
   if (yystate == YYFINAL)
     YYACCEPT;
@@ -1137,229 +1225,151 @@ yyreduce:
     {
   case 2: /* main: OBJLIST  */
               {
-finalList=(yyvsp[0].list);
+    char *buffer = cJSON_Print(pdfObjOfJsonCache);
+    FILE*dest=fopen("path.json","wb");
+    fputs(buffer,dest);
+    free(buffer);
+    fclose(dest);
+    cJSON_Delete(pdfObjOfJsonCache);
 }
-    break;
-
-  case 3: /* OBJLIST: %empty  */
-         {(yyval.list)=pdnull;}
     break;
 
   case 4: /* OBJLIST: OBJLIST OBJREF  */
-                {(yyval.list)=listDPushBack((yyvsp[-1].list),(yyvsp[0].obj));}
+                {
+    char *buffer = cJSON_Print((yyvsp[0].obj));
+    if(cJSON_IsObject((yyvsp[0].obj))){
+    if (cJSON_HasObjectItem((yyvsp[0].obj),"id"))
+    {
+      cJSON*id = cJSON_GetObjectItem((yyvsp[0].obj),"id");
+      sprintf(name,"%s/%sobj%s.json",cJSON_GetStringValue(cJSON_GetObjectItem(pdfObjOfJsonCache,"obj")),cJSON_GetStringValue(cJSON_GetArrayItem(id,0)),cJSON_GetStringValue(cJSON_GetArrayItem(id,1)));
+    }
+    else if(cJSON_HasObjectItem((yyvsp[0].obj),"xref")){
+      sprintf(name,"%s/%d.json",cJSON_GetStringValue(cJSON_GetObjectItem(pdfObjOfJsonCache,"xref")),n++);
+    }
+    else if(cJSON_HasObjectItem((yyvsp[0].obj),"startxref")){
+      cJSON*startxref = cJSON_GetObjectItem((yyvsp[0].obj),"startxref");
+      sprintf(name,"%s/%s.json",cJSON_GetStringValue(cJSON_GetObjectItem(pdfObjOfJsonCache,"startxref")),cJSON_GetStringValue((startxref)));
+    }
+    else if(cJSON_HasObjectItem((yyvsp[0].obj),"trailer")){
+      sprintf(name,"%s/%d.json",cJSON_GetStringValue(cJSON_GetObjectItem(pdfObjOfJsonCache,"trailer")),n++);
+    }
+    }
+    else{
+      sprintf(name,"%s/%d.json",cJSON_GetStringValue(cJSON_GetObjectItem(pdfObjOfJsonCache,"others")),n++);
+    }
+    FILE*dest=fopen(name,"wb");
+    fputs(buffer,dest);
+    free(buffer);
+    fclose(dest);
+    cJSON_Delete((yyvsp[0].obj));
+    }
     break;
 
   case 5: /* OBJREF: PDNULL  */
-              {(yyval.obj)=pdnull;}
-    break;
-
-  case 6: /* OBJREF: KEY  */
-     {(yyval.obj)=(yyvsp[0].obj);}
-    break;
-
-  case 7: /* OBJREF: INDIRECTOBJ  */
-            {
-(yyval.obj)=malloc(sizeof(pdObj));
-(yyval.obj)->typeInfo=pdTypeIndirectObj;
-(yyval.obj)->obj=(yyvsp[0].indirectObj);
-}
-    break;
-
-  case 8: /* OBJREF: XREFOBJ  */
-        {
-(yyval.obj)=malloc(sizeof(pdObj));
-(yyval.obj)->typeInfo=pdocXref;
-(yyval.obj)->obj=(yyvsp[0].list);
+              {
+    (yyval.obj)=cJSON_CreateNull();
 }
     break;
 
   case 9: /* OBJREF: STREAM ENDSTREAM  */
-                  {
-(yyval.obj)=malloc(sizeof(pdObj));
-(yyval.obj)->typeInfo=pdTypeStream;
-(yyval.obj)->obj=(yyvsp[0].stream);
-}
+                  {(yyval.obj)=(yyvsp[0].obj);}
     break;
 
   case 10: /* OBJREF: TRAILER DICTIONARY  */
                     {
-(yyval.obj)=malloc(sizeof(pdObj));
-(yyval.obj)->typeInfo=pdocTrailer;
-(yyval.obj)->obj=(yyvsp[0].list);
+  (yyval.obj)=cJSON_CreateObject();
+  cJSON_AddItemToObject((yyval.obj),"trailer",(yyvsp[0].obj));
 }
     break;
 
   case 11: /* OBJREF: STARTXREF INTEGER  */
                    {
-(yyval.obj)=malloc(sizeof(pdObj));
-(yyval.obj)->typeInfo=pdocStartXref;
-(yyval.obj)->obj=(yyvsp[0].integer);
-}
-    break;
-
-  case 12: /* KEY: BASEOBJ  */
-            {(yyval.obj)=(yyvsp[0].obj);}
-    break;
-
-  case 13: /* KEY: INDIRECTOBJREF  */
-               {
-(yyval.obj)=malloc(sizeof(pdObj));
-(yyval.obj)->typeInfo=pdTypeIndirectObjRef;
-pdIndirectObjRef*ref=malloc(sizeof(pdIndirectObjRef));
-ref->id=(yyvsp[0].objnum).first;
-ref->generation=(yyvsp[0].objnum).second;
-(yyval.obj)->obj=ref;
-}
-    break;
-
-  case 14: /* KEY: ARRAY  */
-      {
-(yyval.obj)=malloc(sizeof(pdObj));
-(yyval.obj)->typeInfo=pdTypeArray;
-(yyval.obj)->obj=(yyvsp[0].list);
-}
-    break;
-
-  case 15: /* KEY: DICTIONARY  */
-           {
-(yyval.obj)=malloc(sizeof(pdObj));
-(yyval.obj)->typeInfo=pdTypeDictionary;
-(yyval.obj)->obj=(yyvsp[0].list);
-}
-    break;
-
-  case 16: /* BASEOBJ: BOOLEAN  */
-                 {
-(yyval.obj)=malloc(sizeof(pdObj));
-(yyval.obj)->typeInfo=pdTypeBoolean;
-(yyval.obj)->obj=(yyvsp[0].boolean);
-}
-    break;
-
-  case 17: /* BASEOBJ: INTEGER  */
-        {
-(yyval.obj)=malloc(sizeof(pdObj));
-(yyval.obj)->typeInfo=pdTypeInteger;
-(yyval.obj)->obj=(yyvsp[0].integer);
-}
-    break;
-
-  case 18: /* BASEOBJ: REAL  */
-     {
-(yyval.obj)=malloc(sizeof(pdObj));
-(yyval.obj)->typeInfo=pdTypeReal;
-(yyval.obj)->obj=(yyvsp[0].real);
-}
-    break;
-
-  case 19: /* BASEOBJ: STRING  */
-       {
-(yyval.obj)=malloc(sizeof(pdObj));
-(yyval.obj)->typeInfo=pdTypeString;
-(yyval.obj)->obj=(yyvsp[0].string);
-}
-    break;
-
-  case 20: /* BASEOBJ: XSTRING  */
-        {
-(yyval.obj)=malloc(sizeof(pdObj));
-(yyval.obj)->typeInfo=pdTypeXString;
-(yyval.obj)->obj=(yyvsp[0].xstring);
-}
-    break;
-
-  case 21: /* BASEOBJ: NAME  */
-     {
-(yyval.obj)=malloc(sizeof(pdObj));
-(yyval.obj)->typeInfo=pdTypeName;
-(yyval.obj)->obj=(yyvsp[0].name);
+  (yyval.obj)=cJSON_CreateObject();
+  cJSON_AddItemToObject((yyval.obj),"startxref",(yyvsp[0].obj));
 }
     break;
 
   case 22: /* ARRAY: '[' LIST ']'  */
-                    {(yyval.list)=(yyvsp[-1].list);}
+                    {(yyval.obj)=(yyvsp[-1].obj);}
     break;
 
   case 23: /* LIST: %empty  */
-      {(yyval.list)=pdnull;}
+      {(yyval.obj)=cJSON_CreateArray();}
     break;
 
   case 24: /* LIST: LIST OBJREF  */
-             {(yyval.list)=listDPushBack((yyvsp[-1].list),(yyvsp[0].obj));}
+             {cJSON_AddItemToArray((yyvsp[-1].obj),(yyvsp[0].obj));(yyval.obj)=(yyvsp[-1].obj);}
     break;
 
   case 25: /* DICTIONARY: LD ENTRYSET RD  */
                            {
-    (yyval.list)=(yyvsp[-1].list);
+    (yyval.obj)=cJSON_ConvertArrayToObject((yyvsp[-1].obj));
+    if(cJSON_GetArraySize((yyvsp[-1].obj))==0)
+      cJSON_Delete((yyvsp[-1].obj));
 }
     break;
 
   case 26: /* ENTRYSET: %empty  */
-         {(yyval.list)=pdnull;}
+         {(yyval.obj)=cJSON_CreateArray();}
     break;
 
   case 27: /* ENTRYSET: ENTRYSET KEY OBJREF  */
                      {
-    PdDictionaryEntry entry=malloc(sizeof(pdDictionaryEntry));
-    entry->key=(yyvsp[-1].obj);
-    entry->value=(yyvsp[0].obj);
-    (yyval.list)=listDPushBack((yyvsp[-2].list),entry);
+cJSON_AddItemToArray((yyvsp[-2].obj),(yyvsp[-1].obj));
+cJSON_AddItemToArray((yyvsp[-2].obj),(yyvsp[0].obj));
+(yyval.obj)=(yyvsp[-2].obj);
 }
     break;
 
   case 28: /* INDIRECTOBJ: OBJ LIST ENDOBJ  */
                                           {
-    (yyval.indirectObj)=malloc(sizeof(pdIndirectObj));
-    (yyval.indirectObj)->id=(yyvsp[-2].objnum).first;
-    (yyval.indirectObj)->generation=(yyvsp[-2].objnum).second;
-    (yyval.indirectObj)->objList=(yyvsp[-1].list);
+    (yyval.obj)=cJSON_CreateObject();
+    cJSON_AddItemToObject((yyval.obj),"id",(yyvsp[-2].obj));
+    cJSON_AddItemToObject((yyval.obj),"body",(yyvsp[-1].obj));
 }
     break;
 
-  case 29: /* XREFOBJ: XREF SUBXREFLIST  */
-                        {
-    (yyval.list)=(yyvsp[0].list);
+  case 29: /* XREFTABELS: XREF SUBXREFLIST  */
+                           {
+  (yyval.obj)=cJSON_CreateObject();
+  cJSON_AddItemToObject((yyval.obj),"xref",(yyvsp[0].obj));
 }
     break;
 
   case 30: /* SUBXREFLIST: %empty  */
-            {(yyval.list)=pdnull;}
+            {(yyval.obj)=cJSON_CreateArray();}
     break;
 
   case 31: /* SUBXREFLIST: SUBXREFLIST SUBXREF  */
-                    {(yyval.list)=listDPushBack((yyvsp[-1].list),(yyvsp[0].subXref));}
+                    {
+    cJSON_AddItemToArray((yyvsp[-1].obj),(yyvsp[0].obj));
+    (yyval.obj)=(yyvsp[-1].obj);
+}
     break;
 
   case 32: /* SUBXREF: SUBXREFHEAD SUBXREFENTRYLIST  */
                                     {
-    (yyval.subXref)=malloc(sizeof(pdXrefSubsection));
-    (yyval.subXref)->startNum=(yyvsp[-1].objnum).first;
-    (yyval.subXref)->length=(yyvsp[-1].objnum).second;
-    (yyval.subXref)->Entries=(yyvsp[0].list);
+(yyval.obj)=cJSON_CreateObject();
+cJSON_AddItemToObject((yyval.obj),"size",(yyvsp[-1].obj));
+cJSON_AddItemToObject((yyval.obj),"body",(yyvsp[0].obj));
 }
     break;
 
   case 33: /* SUBXREFENTRYLIST: %empty  */
-                 {(yyval.list)=pdnull;}
+                 {(yyval.obj)=cJSON_CreateArray();}
     break;
 
   case 34: /* SUBXREFENTRYLIST: SUBXREFENTRYLIST FXREFENTRY  */
                             {
-PdXrefEntry entry= malloc(sizeof(pdXrefEntry));
-entry->offset=(yyvsp[0].objnum).first;
-entry->generation=(yyvsp[0].objnum).second;
-entry->free='f';
-(yyval.list)=listDPushBack((yyvsp[-1].list),entry);
+cJSON_AddItemToArray((yyvsp[-1].obj),(yyvsp[0].obj));
+(yyval.obj)=(yyvsp[-1].obj);
 }
     break;
 
   case 35: /* SUBXREFENTRYLIST: SUBXREFENTRYLIST NXREFENTRY  */
                             {
-PdXrefEntry entry= malloc(sizeof(pdXrefEntry));
-entry->offset=(yyvsp[0].objnum).first;
-entry->generation=(yyvsp[0].objnum).second;
-entry->free='n';
-(yyval.list)=listDPushBack((yyvsp[-1].list),entry);
+cJSON_AddItemToArray((yyvsp[-1].obj),(yyvsp[0].obj));
+(yyval.obj)=(yyvsp[-1].obj);
 }
     break;
 
@@ -1445,6 +1455,7 @@ yyerrorlab:
      label yyerrorlab therefore never appears in user code.  */
   if (0)
     YYERROR;
+  ++yynerrs;
 
   /* Do not reclaim the symbols of the rule whose action triggered
      this YYERROR.  */
@@ -1505,7 +1516,7 @@ yyerrlab1:
 `-------------------------------------*/
 yyacceptlab:
   yyresult = 0;
-  goto yyreturn;
+  goto yyreturnlab;
 
 
 /*-----------------------------------.
@@ -1513,24 +1524,22 @@ yyacceptlab:
 `-----------------------------------*/
 yyabortlab:
   yyresult = 1;
-  goto yyreturn;
+  goto yyreturnlab;
 
 
-#if !defined yyoverflow
-/*-------------------------------------------------.
-| yyexhaustedlab -- memory exhaustion comes here.  |
-`-------------------------------------------------*/
+/*-----------------------------------------------------------.
+| yyexhaustedlab -- YYNOMEM (memory exhaustion) comes here.  |
+`-----------------------------------------------------------*/
 yyexhaustedlab:
   yyerror (YY_("memory exhausted"));
   yyresult = 2;
-  goto yyreturn;
-#endif
+  goto yyreturnlab;
 
 
-/*-------------------------------------------------------.
-| yyreturn -- parsing is finished, clean up and return.  |
-`-------------------------------------------------------*/
-yyreturn:
+/*----------------------------------------------------------.
+| yyreturnlab -- parsing is finished, clean up and return.  |
+`----------------------------------------------------------*/
+yyreturnlab:
   if (yychar != YYEMPTY)
     {
       /* Make sure we have latest lookahead translation.  See comments at
@@ -1561,102 +1570,32 @@ yyreturn:
 
 int yyerror(char *s)
 {
-    fprintf(stderr,"###error:%s->%lld###\n",s,pos);
+    perror(s);
     return 0; 
 }       
-#include <path.h>
-static char *prefix = NULL;
-static PdTypeInfo infoArr[] = {pdTypeBoolean,
-                               pdTypeInteger,
-                               pdTypeReal,
-                               pdTypeString,
-                               pdTypeXString,
-                               pdTypeStream,
-                               pdTypeName,
-                               // 复合类型
-
-                               pdTypeArray,
-                               pdTypeDictionary,
-                               pdTypeIndirectObjRef,
-
-                               // pdTypeObjsXrefNum,
-
-                               /* pdf文档子结构 */
-                               pdTypeIndirectObj,
-                               pdocXref,
-                               pdocXrefSubsection,
-                               pdocXrefEntry,
-                               pdocTrailer,
-                               pdocStartXref};
-static size_t IndexLength = sizeof(infoArr) / sizeof(PdTypeInfo);
-static char **pdTyeCount()
+cJSON *cJSON_ConvertArrayToObject(cJSON *item)
 {
-    return malloc(sizeof(char *) * IndexLength);
-}
-static void singleIndex(char **arr, PdTypeInfo info)
-{
-    switch (info)
+    if (cJSON_IsArray(item))
     {
-    case pdTypeBoolean:
-        arr[info] = createPath(prefix, "pdTypeBoolean");
-        break;
-    case pdTypeInteger:
-        arr[info] = createPath(prefix, "pdTypeInteger");
-        break;
-    case pdTypeReal:
-        arr[info] = createPath(prefix, "pdTypeReal");
-        break;
-    case pdTypeString:
-        arr[info] = createPath(prefix, "pdTypeString");
-        break;
-    case pdTypeXString:
-        arr[info] = createPath(prefix, "pdTypeXString");
-        break;
-    case pdTypeStream:
-        arr[info] = createPath(prefix, "pdTypeStream");
-        break;
-    case pdTypeName:
-        arr[info] = createPath(prefix, "pdTypeName");
-        break;
-    case pdTypeArray:
-        arr[info] = createPath(prefix, "pdTypeArray");
-        break;
-    case pdTypeDictionary:
-        arr[info] = createPath(prefix, "pdTypeDictionary");
-        break;
-    case pdocXrefSubsection:
-        arr[info] = createPath(prefix, "pdocXrefSubsection");
-        break;
-    case pdocXrefEntry:
-        arr[info] = createPath(prefix, "pdocXrefEntry");
-        break;
-    case pdTypeIndirectObjRef:
-        arr[info] = createPath(prefix, "pdTypeIndirectObjRef");
-        break;
-    case pdTypeIndirectObj:
-        arr[info] = createPath(prefix, "pdTypeIndirectObj");
-        break;
-    case pdocXref:
-        arr[info] = createPath(prefix, "pdocXref");
-        break;
-    case pdocTrailer:
-        arr[info] = createPath(prefix, "pdocTrailer");
-        break;
-    case pdocStartXref:
-        arr[info] = createPath(prefix, "pdocStartXref");
-        break;
-    default:
-        perror("undefined type");
-        break;
+        int sz = cJSON_GetArraySize(item);
+        if (sz <= 0 || sz % 2)
+            return item;
+        for (int i = 0; i < sz; i += 2)
+        {
+            if (cJSON_IsString(cJSON_GetArrayItem(item, i)))
+                continue;
+            else
+                return item;
+        }
+        cJSON *obj = cJSON_CreateObject();
+        cJSON *key, *value;
+        while (key = cJSON_DetachItemFromArray(item, 0))
+        {
+            value = cJSON_DetachItemFromArray(item, 0);
+            cJSON_AddItemToObject(obj,cJSON_GetStringValue(key),value);
+        }
+        return obj;
     }
-}
-char **initCacheIndex()
-{
-    char *tmp = getCurrent_path();
-    prefix = createPath(tmp, "cache");
-    free(tmp);
-    char **arr = pdTyeCount();
-    for (size_t i = 0; i < IndexLength; ++i)
-        singleIndex(arr, infoArr[i]);
-    return arr;
+    else
+        return item;
 }
