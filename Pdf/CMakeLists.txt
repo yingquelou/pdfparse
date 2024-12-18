@@ -1,5 +1,4 @@
-cmake_minimum_required(VERSION ${CMV})
-project(pdf LANGUAGES C)
+project(pdf LANGUAGES C CXX)
 
 set(HEADPATH ${PROJECT_SOURCE_DIR}/include)
 add_executable(${PROJECT_NAME} test.c)

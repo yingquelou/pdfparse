@@ -1,8 +1,7 @@
-set(CMV 3.8)
-cmake_minimum_required(VERSION ${CMV})
+cmake_minimum_required(VERSION 3.10)
 project(test LANGUAGES C)
-
-include(./utils.cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+include(utils)
 
 
 list(APPEND DEBUGLIST Debug RelWithDebInfo)

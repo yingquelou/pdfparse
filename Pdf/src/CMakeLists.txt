@@ -1,12 +1,10 @@
-cmake_minimum_required(VERSION ${CMV})
-project(pdfengin LANGUAGES C)
-
-add_subdirectory(reader)
-add_subdirectory(list)
-add_subdirectory(common)
-add_subdirectory(writer)
-
-add_library(${PROJECT_NAME} ${SHARED} test.c)
-
-include_directories(${HEADPATH})
-target_link_libraries(${PROJECT_NAME} pdfreader)
+block()
+file(GLOB PROJS *)
+foreach(ITEM IN LISTS PROJS)
+cmake_path(APPEND CUR_CMAKEFILE_PATH ${ITEM} CMakeLists.txt)
+if(EXISTS ${CUR_CMAKEFILE_PATH})
+add_subdirectory(${ITEM})
+message(${CUR_CMAKEFILE_PATH})
+endif()
+endforeach()
+endblock()

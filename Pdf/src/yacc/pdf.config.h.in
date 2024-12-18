@@ -1,0 +1,9 @@
+#ifndef PDF_CONFIG_H
+#define PDF_CONFIG_H 1
+#ifdef BISON_FLEX
+#include"@BISON_FLEX_HEADER@"
+#endif
+#ifdef BISON_YACC
+#include"@BISON_YACC_HEADER@"
+#endif
+#endif

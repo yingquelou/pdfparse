@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION ${CMV})
 project(pdfDestroy LANGUAGES C)
 
 file(GLOB READSRC *.c)
