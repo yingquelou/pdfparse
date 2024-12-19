@@ -1,6 +1,7 @@
 %{
 #define BISON_FLEX
 #include "pdf.config.h"
+#include <iostream>
 void yyerror(const char*str);
 %}
 /* %no-lines */
@@ -8,15 +9,21 @@ void yyerror(const char*str);
 /* %parse-param {int isSplit} */
 /* %parse-param {const char*savaAsJson} */
 /* %glr-parser */
-%union{
-}
+%define api.value.type {Object}
+
 /* %destructor {json_decref($$);} <obj>  */
-%token FALSE_ TRUE_ REAL STRING XSTRING NAME PDNULL OBJ R ENDSTREAM
+%token <b> FALSE_ TRUE_
+%token <str> STRING XSTRING NAME 
+%token PDNULL OBJ R ENDSTREAM
+%token <d> REAL
 /* 关键字 */
-%token LD RD  ENDOBJ STREAM XREF TRAILER STARTXREF La Ra
-%type stream subXref obj array pDocument pdSection pdObj trailer startxref xref dict objs
+%token LD RD ENDOBJ STREAM XREF TRAILER STARTXREF La Ra
+%type stream subXref obj pDocument pdSection  trailer startxref xref  
+%type <obj> pdObj 
+%type <array> array objs
+%type <dict> dict
 %type  subXrefEntry dictEntries
-%nonassoc  INTEGER
+%nonassoc <sll> INTEGER
 %left F N
 %start pdf
 %%
@@ -66,11 +73,17 @@ obj:PDNULL
 |dict
 |TRUE_
 |FALSE_
-|INTEGER
+|INTEGER{
+  // std::cout<<"INTEGER\t"<<$1<<'\n';
+}
 |REAL
-|STRING
+|STRING {
+  std::cout<<"STRING\t"<<$1<<'\n';
+}
 |XSTRING
-|NAME
+|NAME{
+  // std::cout<<"NAME\t"<<$1<<'\n';
+}
 ;
 
 stream:STREAM ENDSTREAM{};
