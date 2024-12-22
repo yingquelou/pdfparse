@@ -1,6 +1,7 @@
 %{
 #define BISON_YACC
 #include "pdf.config.h"
+typedef yy::parser::semantic_type YYSTYPE;
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -8,8 +9,7 @@ static std::stringstream buffer;
 static int parenthesis;
 %}
 %x streamState strState xstrState
-%option noyywrap 
-/* %option noline */
+%option noyywrap bison-bridge noline
 /* nodefault */
 La "["
 Ra "]"
@@ -32,16 +32,16 @@ Space {Tab}|{CrLf}
 }
 {Tab} {}
 {Ld} {
-	return LD;
+	return yy::parser::token::LD;
 }
 {Rd} {
-	return RD;
+	return yy::parser::token::RD;
 }
 {La} {
-	return La;
+	return yy::parser::token::La;
 }
 {Ra} {
-	return Ra;
+	return yy::parser::token::Ra;
 }
 "<" {
 }
@@ -50,7 +50,7 @@ Space {Tab}|{CrLf}
 <xstrState>{Space} {}
 <xstrState>">" {
 	BEGIN INITIAL;
-	return XSTRING;
+	return yy::parser::token::XSTRING;
 }
 
 "(" {
@@ -69,9 +69,9 @@ Space {Tab}|{CrLf}
 	if(--parenthesis==0)
 	{
 		BEGIN INITIAL;
-		yylval.str.assign(buffer.str());
+		yylval->str.assign(buffer.str());
 		buffer.str("");
-		return STRING;
+		return yy::parser::token::STRING;
 	}
 	else
 		buffer.write(yytext,yyleng);
@@ -80,60 +80,60 @@ Space {Tab}|{CrLf}
 	buffer.write(yytext,yyleng);
 }
 {Int}{Space}+{Int}{Space}+R {
-	return R;
+	return yy::parser::token::R;
 }
 trailer {
-	return TRAILER;
+	return yy::parser::token::TRAILER;
 }
 null {
-	return PDNULL;
+	return yy::parser::token::PDNULL;
 }
 endobj {
-	return ENDOBJ;
+	return yy::parser::token::ENDOBJ;
 }
 {Int}{Space}+{Int}{Space}+obj {
-	return OBJ;
+	return yy::parser::token::OBJ;
 }
 true {
-	return TRUE_;
+	return yy::parser::token::TRUE_;
 }
 false {
-	return FALSE_;
+	return yy::parser::token::FALSE_;
 }
 startxref {
-return STARTXREF;
+return yy::parser::token::STARTXREF;
 }
 xref {
-	return XREF;
+	return yy::parser::token::XREF;
 }
 f {
-	return F;
+	return yy::parser::token::F;
 }
 n {
-	return N;
+	return yy::parser::token::N;
 }
 {Int}   {
 	yylval.sll=convertAs<signed long long>({yytext,yyleng});
-	return INTEGER;
+	return yy::parser::token::INTEGER;
 }
 {Real}     {
-	return REAL;
+	return yy::parser::token::REAL;
 }
 
 {Name} {
 	yylval.str.assign(yytext+1,yyleng-1);
 	// std::cout<<"NAME\t"<<yylval.str<<'\n';G
-	return NAME;
+	return yy::parser::token::NAME;
 }
 
 stream{CrLf}? {
 	BEGIN streamState;
-	return STREAM;
+	return yy::parser::token::STREAM;
 }
 <streamState>{CrLf}?endstream {
 	BEGIN INITIAL;
 	buffer.str("");
-	return ENDSTREAM;
+	return yy::parser::token::ENDSTREAM;
 }
 <streamState>{Lf}|. {
 	buffer.write(yytext,yyleng);

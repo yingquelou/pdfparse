@@ -1,31 +1,40 @@
 %{
-#define BISON_FLEX
-#include "pdf.config.h"
+
 #include <iostream>
 void yyerror(const char*str);
 %}
-/* %no-lines */
+%no-lines
 //%debug
 /* %parse-param {int isSplit} */
 /* %parse-param {const char*savaAsJson} */
 /* %glr-parser */
-%define api.value.type {Object}
-
+%define api.token.constructor
+%define api.value.type variant
+%define parse.assert
+%skeleton "lalr1.cc" 
+%language "c++"
+%header
+%code top {
+#define BISON_FLEX
+#include "pdf.config.h"
+}
+/* %skeleton "glr.c" */
 /* %destructor {json_decref($$);} <obj>  */
-%token <b> FALSE_ TRUE_
-%token <str> STRING XSTRING NAME 
+%token <bool> FALSE_ TRUE_
+%token <std::string> STRING XSTRING NAME 
 %token PDNULL OBJ R ENDSTREAM
-%token <d> REAL
+%token <double> REAL
 /* 关键字 */
 %token LD RD ENDOBJ STREAM XREF TRAILER STARTXREF La Ra
 %type stream subXref obj pDocument pdSection  trailer startxref xref  
-%type <obj> pdObj 
-%type <array> array objs
-%type <dict> dict
+%type <PdObj> pdObj 
+%type <PdArray> array objs
+%type <PdDict> dict
 %type  subXrefEntry dictEntries
-%nonassoc <sll> INTEGER
+%nonassoc <signed long long> INTEGER
 %left F N
 %start pdf
+
 %%
 pdf: pDocument {
 };
