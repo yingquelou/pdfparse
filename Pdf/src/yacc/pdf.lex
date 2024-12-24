@@ -1,7 +1,7 @@
 %{
 #define BISON_YACC
+#include "utils.hpp"
 #include "pdf.config.h"
-typedef yy::parser::semantic_type YYSTYPE;
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -9,7 +9,7 @@ static std::stringstream buffer;
 static int parenthesis;
 %}
 %x streamState strState xstrState
-%option noyywrap bison-bridge noline
+%option noyywrap noline
 /* nodefault */
 La "["
 Ra "]"
@@ -69,7 +69,7 @@ Space {Tab}|{CrLf}
 	if(--parenthesis==0)
 	{
 		BEGIN INITIAL;
-		yylval->str.assign(buffer.str());
+		// yylval->str.assign(buffer.str());
 		buffer.str("");
 		return yy::parser::token::STRING;
 	}
@@ -80,7 +80,9 @@ Space {Tab}|{CrLf}
 	buffer.write(yytext,yyleng);
 }
 {Int}{Space}+{Int}{Space}+R {
-	return yy::parser::token::R;
+	std::size_t num,gen;
+	unpack(std::string(yytext,yyleng),num,gen);
+	return {yy::parser::token::R,std::make_pair(num,gen)};
 }
 trailer {
 	return yy::parser::token::TRAILER;
@@ -92,7 +94,9 @@ endobj {
 	return yy::parser::token::ENDOBJ;
 }
 {Int}{Space}+{Int}{Space}+obj {
-	return yy::parser::token::OBJ;
+	std::size_t num,gen;
+	unpack(std::string(yytext,yyleng),num,gen);
+	return {yy::parser::token::OBJ,std::make_pair(num,gen)};
 }
 true {
 	return yy::parser::token::TRUE_;
@@ -113,7 +117,6 @@ n {
 	return yy::parser::token::N;
 }
 {Int}   {
-	yylval.sll=convertAs<signed long long>({yytext,yyleng});
 	return yy::parser::token::INTEGER;
 }
 {Real}     {
@@ -121,8 +124,6 @@ n {
 }
 
 {Name} {
-	yylval.str.assign(yytext+1,yyleng-1);
-	// std::cout<<"NAME\t"<<yylval.str<<'\n';G
 	return yy::parser::token::NAME;
 }
 

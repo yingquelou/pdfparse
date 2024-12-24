@@ -1,37 +1,35 @@
 %{
-
+#include "pdf.config.h"
 #include <iostream>
-void yyerror(const char*str);
 %}
 %no-lines
 //%debug
 /* %parse-param {int isSplit} */
 /* %parse-param {const char*savaAsJson} */
 /* %glr-parser */
+/* %skeleton "lalr1.cc"  */
+%language "c++"
 %define api.token.constructor
 %define api.value.type variant
-%define parse.assert
-%skeleton "lalr1.cc" 
-%language "c++"
-%header
+/* %define parse.assert */
 %code top {
-#define BISON_FLEX
-#include "pdf.config.h"
 }
 /* %skeleton "glr.c" */
 /* %destructor {json_decref($$);} <obj>  */
 %token <bool> FALSE_ TRUE_
 %token <std::string> STRING XSTRING NAME 
-%token PDNULL OBJ R ENDSTREAM
+%token PDNULL ENDSTREAM
+%token <PdObjNum> OBJ R
 %token <double> REAL
+%token <signed long long> INTEGER
 /* 关键字 */
 %token LD RD ENDOBJ STREAM XREF TRAILER STARTXREF La Ra
-%type stream subXref obj pDocument pdSection  trailer startxref xref  
+%type stream subXref pDocument pdSection  trailer startxref xref  
 %type <PdObj> pdObj 
 %type <PdArray> array objs
 %type <PdDict> dict
+%type <Object> obj
 %type  subXrefEntry dictEntries
-%nonassoc <signed long long> INTEGER
 %left F N
 %start pdf
 
@@ -43,9 +41,7 @@ pDocument:
 |pDocument pdSection {
 };
 
-pdSection: pdObj {
-    
-}
+pdSection: pdObj 
 |xref
 |trailer
 |startxref
@@ -75,23 +71,37 @@ pdObj: OBJ objs ENDOBJ {
 trailer:
 TRAILER dict {};
 
-obj:PDNULL 
-|stream
-|R
-|array
-|dict
-|TRUE_
-|FALSE_
-|INTEGER{
-  // std::cout<<"INTEGER\t"<<$1<<'\n';
+obj:PDNULL {
+    $$.none=nullptr;
 }
-|REAL
+|stream {
+
+}
+|R {
+    $$.ref=$1;
+}
+|array {
+    $$.array=$1;
+}
+|dict {
+    $$.dict=$1;
+}
+|TRUE_ {
+    $$.b=1;
+}
+|FALSE_ {
+    $$.b=0;
+}
+|INTEGER{
+    $$.sll=$1;
+}
+|REAL {
+    $$.d=$1;
+}
 |STRING {
-  std::cout<<"STRING\t"<<$1<<'\n';
 }
 |XSTRING
 |NAME{
-  // std::cout<<"NAME\t"<<$1<<'\n';
 }
 ;
 
@@ -111,20 +121,6 @@ objs:{}
 |objs obj {
 };
 %%
-void yyerror(const char*str){
+void yy::parser::error(const std::string&msg){
 
-}
-int main(int argc, char const *argv[])
-{
-  for (size_t i = 1; argv[i]; i++)
-  {
-    FILE *f = fopen(argv[i], "rb");
-    if (f)
-    {
-      yyset_in(f);
-      yyparse();
-      fclose(f);
-    }
-  }
-  return 0;
 }
