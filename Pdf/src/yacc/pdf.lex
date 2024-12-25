@@ -27,6 +27,8 @@ Name \/[^ \/\\\t\r\n\[\]\<\(\)\>]+
 Eol {Tab}*{CrLf}
 Space {Tab}|{CrLf}
 %%
+
+
 %.* {}
 {CrLf} {
 }
@@ -44,17 +46,20 @@ Space {Tab}|{CrLf}
 	return yy::parser::token::Ra;
 }
 "<" {
+	BEGIN xstrState;
+	buffer.str("");
 }
-<xstrState>{Xd} {
-}
+<xstrState>{Xd} {buffer.write(yytext,yyleng);}
 <xstrState>{Space} {}
 <xstrState>">" {
 	BEGIN INITIAL;
-	return yy::parser::token::XSTRING;
+	auto&&s=buffer.str();
+	return {yy::parser::token::XSTRING,"<"+s+">"};
 }
 
 "(" {
 	parenthesis=1;
+	buffer.str("");
 	BEGIN strState;
 }
 <strState>\\{Eol} {}
@@ -69,9 +74,8 @@ Space {Tab}|{CrLf}
 	if(--parenthesis==0)
 	{
 		BEGIN INITIAL;
-		// yylval->str.assign(buffer.str());
-		buffer.str("");
-		return yy::parser::token::STRING;
+		auto&&s=buffer.str();
+		return {yy::parser::token::STRING,'('+s+')'};
 	}
 	else
 		buffer.write(yytext,yyleng);
@@ -82,7 +86,11 @@ Space {Tab}|{CrLf}
 {Int}{Space}+{Int}{Space}+R {
 	std::size_t num,gen;
 	unpack(std::string(yytext,yyleng),num,gen);
-	return {yy::parser::token::R,std::make_pair(num,gen)};
+	Json::Value vn(num),vg(gen);
+	Json::Value v;
+	v.append(vn);
+	v.append(vg);
+	return {yy::parser::token::R,v};
 }
 trailer {
 	return yy::parser::token::TRAILER;
@@ -96,13 +104,16 @@ endobj {
 {Int}{Space}+{Int}{Space}+obj {
 	std::size_t num,gen;
 	unpack(std::string(yytext,yyleng),num,gen);
-	return {yy::parser::token::OBJ,std::make_pair(num,gen)};
+	Json::Value obj;
+	obj["id"][0]=num;
+	obj["id"][1]=gen;
+	return {yy::parser::token::OBJ,obj};
 }
 true {
-	return yy::parser::token::TRUE_;
+	return {yy::parser::token::TRUE_,true};
 }
 false {
-	return yy::parser::token::FALSE_;
+	return {yy::parser::token::FALSE_,false};
 }
 startxref {
 return yy::parser::token::STARTXREF;
@@ -117,24 +128,23 @@ n {
 	return yy::parser::token::N;
 }
 {Int}   {
-	return yy::parser::token::INTEGER;
+	return {yy::parser::token::INTEGER,convertAs<long long>({yytext,yyleng})};
 }
 {Real}     {
-	return yy::parser::token::REAL;
+	return {yy::parser::token::REAL,convertAs<double>({yytext,yyleng})};
 }
 
 {Name} {
-	return yy::parser::token::NAME;
+	return {yy::parser::token::NAME,{yytext+1,yytext+yyleng}};
 }
 
 stream{CrLf}? {
 	BEGIN streamState;
-	return yy::parser::token::STREAM;
+	buffer.str("");
 }
 <streamState>{CrLf}?endstream {
 	BEGIN INITIAL;
-	buffer.str("");
-	return yy::parser::token::ENDSTREAM;
+	return {yy::parser::token::STREAM,buffer.str()};
 }
 <streamState>{Lf}|. {
 	buffer.write(yytext,yyleng);

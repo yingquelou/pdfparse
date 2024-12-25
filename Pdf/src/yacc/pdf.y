@@ -16,20 +16,15 @@
 }
 /* %skeleton "glr.c" */
 /* %destructor {json_decref($$);} <obj>  */
-%token <bool> FALSE_ TRUE_
-%token <std::string> STRING XSTRING NAME 
-%token PDNULL ENDSTREAM
-%token <PdObjNum> OBJ R
-%token <double> REAL
-%token <signed long long> INTEGER
+%token <Json::Value> FALSE_ TRUE_
+%token <Json::Value> STRING XSTRING NAME 
+%token <Json::Value> OBJ R STREAM
+%token <Json::Value> INTEGER PDNULL REAL
 /* 关键字 */
-%token LD RD ENDOBJ STREAM XREF TRAILER STARTXREF La Ra
-%type stream subXref pDocument pdSection  trailer startxref xref  
-%type <PdObj> pdObj 
-%type <PdArray> array objs
-%type <PdDict> dict
-%type <Object> obj
-%type  subXrefEntry dictEntries
+%token LD RD ENDOBJ  XREF TRAILER STARTXREF La Ra
+%type  subXref pDocument pdSection  trailer startxref xref  
+%type <Json::Value> pdObj array objs dict obj dictEntries
+%type  subXrefEntry 
 %left F N
 %start pdf
 
@@ -41,7 +36,9 @@ pDocument:
 |pDocument pdSection {
 };
 
-pdSection: pdObj 
+pdSection: pdObj {
+    std::cout<<$1;
+}
 |xref
 |trailer
 |startxref
@@ -66,61 +63,43 @@ startxref: STARTXREF INTEGER {}
 ;
 
 pdObj: OBJ objs ENDOBJ {
+    $1["body"]=$2;
+    $$=std::move($1);
 };
 
 trailer:
 TRAILER dict {};
 
-obj:PDNULL {
-    $$.none=nullptr;
-}
-|stream {
-
-}
-|R {
-    $$.ref=$1;
-}
-|array {
-    $$.array=$1;
-}
-|dict {
-    $$.dict=$1;
-}
-|TRUE_ {
-    $$.b=1;
-}
-|FALSE_ {
-    $$.b=0;
-}
-|INTEGER{
-    $$.sll=$1;
-}
-|REAL {
-    $$.d=$1;
-}
-|STRING {
-}
+obj:PDNULL 
+|STREAM
+|R 
+|array 
+|dict
+|TRUE_ 
+|FALSE_ 
+|INTEGER
+|REAL 
+|STRING 
 |XSTRING
-|NAME{
-}
+|NAME
 ;
 
-stream:STREAM ENDSTREAM{};
+array: La objs Ra {$$=std::move($2);};
 
-array: La objs Ra {};
+dict: LD dictEntries RD {$$=std::move($2);};
 
-
-dict: LD dictEntries RD {}
-;
-
-dictEntries: {}
+dictEntries: 
 |dictEntries NAME obj {
+    $1[$2.asString()]=$3;
+    $$=std::move($1);
 };
 
-objs:{}
+objs: {}
 |objs obj {
+    $1.append($2);
+    $$=std::move($1);
 };
 %%
 void yy::parser::error(const std::string&msg){
-
+std::cerr<<msg;
 }
