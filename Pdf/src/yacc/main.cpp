@@ -9,13 +9,13 @@ int main(int argc, char const *argv[])
     {
       std::string log(argv[i]);
       log += ".log";
-      FILE *fe = freopen(log.c_str(), "wb", stderr);
+      // FILE *fe = freopen(log.c_str(), "wb", stderr);
       yyrestart(f);
       yy::parser parser;
-      parser.set_debug_level(1);
+      parser.set_debug_level(0);
       parser();
       fclose(f);
-      fclose(fe);
+      // fclose(fe);
     }
   }
   return 0;

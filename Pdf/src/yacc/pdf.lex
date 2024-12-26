@@ -7,18 +7,34 @@
 #include <iostream>
 static std::stringstream buffer;
 static int parenthesis;
+static std::stack<yy_state_type> stateStack;
+#define yy_push_state(state)      \
+	do                            \
+	{                             \
+		stateStack.push(YYSTATE); \
+		BEGIN state;              \
+	} while (false)
+#define yy_pop_state()          \
+	do                          \
+	{                           \
+		BEGIN stateStack.top(); \
+		stateStack.pop();       \
+	} while (false)
 %}
 %x streamState strState xstrState
-%option noyywrap noline
+%x objBodyState trailerState xrefState 
+%option noyywrap noline 
+/* debug */
 /* nodefault */
 La "["
 Ra "]"
 Ld "<<"
 Rd ">>"
-D [0-9]
-Xd [0-9A-Fa-f]
-Real [+-]?{D}*\.{D}+
-Int [+-]?{D}+
+digit [[:digit:]]
+xdigit [[:xdigit:]]
+Real [+-]?{digit}*\.{digit}+
+Nat {digit}+
+Int [+-]?{Nat}
 Tab [ \t]
 Cr \r
 Lf \n
@@ -30,37 +46,37 @@ Space {Tab}|{CrLf}
 
 
 %.* {}
-{CrLf} {
+<INITIAL,xrefState>{CrLf} {
 }
-{Tab} {}
-{Ld} {
+<INITIAL,xrefState>{Tab} {}
+<objBodyState,trailerState>{Ld} {
 	return yy::parser::token::LD;
 }
-{Rd} {
+<objBodyState,trailerState>{Rd} {
 	return yy::parser::token::RD;
 }
-{La} {
+<objBodyState,trailerState>{La} {
 	return yy::parser::token::La;
 }
-{Ra} {
+<objBodyState,trailerState>{Ra} {
 	return yy::parser::token::Ra;
 }
-"<" {
-	BEGIN xstrState;
+<objBodyState,trailerState>"<" {
+	yy_push_state(xstrState);
 	buffer.str("");
 }
-<xstrState>{Xd} {buffer.write(yytext,yyleng);}
+<xstrState>{xdigit} {buffer.write(yytext,yyleng);}
 <xstrState>{Space} {}
 <xstrState>">" {
-	BEGIN INITIAL;
+	yy_pop_state();
 	auto&&s=buffer.str();
 	return {yy::parser::token::XSTRING,"<"+s+">"};
 }
 
-"(" {
+<objBodyState,trailerState>"(" {
 	parenthesis=1;
 	buffer.str("");
-	BEGIN strState;
+	yy_push_state(strState);
 }
 <strState>\\{Eol} {}
 <strState>\\(D{1,3}|[()nrtbf\\]) {
@@ -73,7 +89,7 @@ Space {Tab}|{CrLf}
 <strState>")" {
 	if(--parenthesis==0)
 	{
-		BEGIN INITIAL;
+		yy_pop_state();
 		auto&&s=buffer.str();
 		return {yy::parser::token::STRING,'('+s+')'};
 	}
@@ -83,7 +99,7 @@ Space {Tab}|{CrLf}
 <strState>[^)] {
 	buffer.write(yytext,yyleng);
 }
-{Int}{Space}+{Int}{Space}+R {
+<objBodyState,trailerState>{Int}{Space}+{Int}{Space}+R {
 	std::size_t num,gen;
 	unpack(std::string(yytext,yyleng),num,gen);
 	Json::Value vn(num),vg(gen);
@@ -95,13 +111,18 @@ Space {Tab}|{CrLf}
 trailer {
 	return yy::parser::token::TRAILER;
 }
-null {
+<objBodyState,trailerState>null {
 	return yy::parser::token::PDNULL;
 }
-endobj {
+<objBodyState>endobj {
+	yy_pop_state();
 	return yy::parser::token::ENDOBJ;
 }
+<INITIAL,xrefState>{Nat} {
+	return {yy::parser::token::NAT,{yytext,yytext+yyleng}};
+}
 {Int}{Space}+{Int}{Space}+obj {
+	yy_push_state(objBodyState);
 	std::size_t num,gen;
 	unpack(std::string(yytext,yyleng),num,gen);
 	Json::Value obj;
@@ -109,41 +130,42 @@ endobj {
 	obj["id"][1]=gen;
 	return {yy::parser::token::OBJ,obj};
 }
-true {
+<objBodyState,trailerState>true {
 	return {yy::parser::token::TRUE_,true};
 }
-false {
+<objBodyState,trailerState>false {
 	return {yy::parser::token::FALSE_,false};
 }
 startxref {
 return yy::parser::token::STARTXREF;
 }
 xref {
+	yy_push_state(xrefState);
 	return yy::parser::token::XREF;
 }
-f {
+<xrefState>f {
 	return yy::parser::token::F;
 }
-n {
+<xrefState>n {
 	return yy::parser::token::N;
 }
-{Int}   {
+<objBodyState,trailerState>{Int}   {
 	return {yy::parser::token::INTEGER,convertAs<long long>({yytext,yyleng})};
 }
-{Real}     {
+<objBodyState,trailerState>{Real}     {
 	return {yy::parser::token::REAL,convertAs<double>({yytext,yyleng})};
 }
 
-{Name} {
+<objBodyState,trailerState>{Name} {
 	return {yy::parser::token::NAME,{yytext+1,yytext+yyleng}};
 }
 
-stream{CrLf}? {
-	BEGIN streamState;
+<objBodyState>stream{CrLf}? {
+	yy_push_state(streamState);
 	buffer.str("");
 }
 <streamState>{CrLf}?endstream {
-	BEGIN INITIAL;
+	yy_pop_state();
 	return {yy::parser::token::STREAM,buffer.str()};
 }
 <streamState>{Lf}|. {
