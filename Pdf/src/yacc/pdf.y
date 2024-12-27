@@ -18,29 +18,29 @@
 /* %destructor {json_decref($$);} <obj>  */
 %token <Json::Value> FALSE_ TRUE_ NAT
 %token <Json::Value> STRING XSTRING NAME 
-%token <Json::Value> OBJ R STREAM 
+%token <Json::Value> OBJ R STREAM F N HEADER
 %token <Json::Value> INTEGER PDNULL REAL
 /* 关键字 */
 %token LD RD ENDOBJ  XREF TRAILER STARTXREF La Ra
-%type <Json::Value> subXref xref pdSection xrefs
-%type <Json::Value> pDocument trailer startxref 
+%type <Json::Value> subXref xref pdSection xrefs 
+%type <Json::Value> pDocument trailer startxref subXrefEntries
 %type <Json::Value> pdObj array objs dict obj dictEntries subXrefEntry
-%left F N
 %start pdf
 
 %%
-pdf: pDocument {
-};
+pdf: pDocument {};
 
 pDocument:
 |pDocument pdSection ;
 
 pdSection: pdObj 
-|xref{
+|xref
+|trailer{
     std::cout<<$1;
 }
-|trailer
-|startxref
+|startxref{
+    std::cout<<$1;
+}
 ;
 
 xref:XREF xrefs {
@@ -53,38 +53,21 @@ xrefs:
 };
 
 subXref:
-subXref subXrefEntry {
-    $1.append($2);
-    $$=std::move($1);
-}
-|NAT NAT {
-  Json::Value v;
-  auto &header=  v["header"];
-  header.append($1);
-  header.append($2);
-  $$.append(v);
+HEADER subXrefEntries {
+    $$["header"]=$1;
+    $$["body"]=$2;
 };
 
-subXrefEntry:
-NAT NAT F {
-auto &f=  $$["f"];
-f.append($1);
-f.append($2);
-}
-|NAT NAT N {
-auto &n=  $$["n"];
-n.append($1);
-n.append($2);
-}
-|NAT NAT {
-  auto &header=  $$["header"];
-  header.append($1);
-  header.append($2);
-}
-;
+subXrefEntries:
+|subXrefEntries subXrefEntry {
+$1.append($2);
+$$=std::move($1);
+};
 
-startxref: STARTXREF INTEGER {}
-;
+subXrefEntry:F 
+|N;
+
+startxref: STARTXREF INTEGER {$$=$2;};
 
 pdObj: OBJ objs ENDOBJ {
     $1["body"]=$2;
@@ -92,7 +75,7 @@ pdObj: OBJ objs ENDOBJ {
 };
 
 trailer:
-TRAILER dict {};
+TRAILER dict {$$=$2;};
 
 obj:PDNULL 
 |STREAM

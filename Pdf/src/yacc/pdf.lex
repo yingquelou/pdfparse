@@ -21,9 +21,8 @@ static std::stack<yy_state_type> stateStack;
 		stateStack.pop();       \
 	} while (false)
 %}
-%x streamState strState xstrState
-%x objBodyState trailerState xrefState 
-%option noyywrap noline 
+%x streamState strState xstrState xrefState 
+%option noyywrap noline
 /* debug */
 /* nodefault */
 La "["
@@ -44,36 +43,35 @@ Eol {Tab}*{CrLf}
 Space {Tab}|{CrLf}
 %%
 
-
 %.* {}
-<INITIAL,xrefState>{CrLf} {
+{CrLf} {
 }
-<INITIAL,xrefState>{Tab} {}
-<objBodyState,trailerState>{Ld} {
+{Tab} {}
+{Ld} {
 	return yy::parser::token::LD;
 }
-<objBodyState,trailerState>{Rd} {
+{Rd} {
 	return yy::parser::token::RD;
 }
-<objBodyState,trailerState>{La} {
+{La} {
 	return yy::parser::token::La;
 }
-<objBodyState,trailerState>{Ra} {
+{Ra} {
 	return yy::parser::token::Ra;
 }
-<objBodyState,trailerState>"<" {
+"<" {
 	yy_push_state(xstrState);
 	buffer.str("");
 }
 <xstrState>{xdigit} {buffer.write(yytext,yyleng);}
-<xstrState>{Space} {}
+<xstrState,xrefState>{Space} {}
 <xstrState>">" {
 	yy_pop_state();
 	auto&&s=buffer.str();
 	return {yy::parser::token::XSTRING,"<"+s+">"};
 }
 
-<objBodyState,trailerState>"(" {
+"(" {
 	parenthesis=1;
 	buffer.str("");
 	yy_push_state(strState);
@@ -99,30 +97,26 @@ Space {Tab}|{CrLf}
 <strState>[^)] {
 	buffer.write(yytext,yyleng);
 }
-<objBodyState,trailerState>{Int}{Space}+{Int}{Space}+R {
+{Nat}{Space}+{Nat}{Space}+R {
 	std::size_t num,gen;
-	unpack(std::string(yytext,yyleng),num,gen);
+	unpack({yytext,yyleng},num,gen);
 	Json::Value vn(num),vg(gen);
 	Json::Value v;
-	v.append(vn);
-	v.append(vg);
+	v["R"].append(vn);
+	v["R"].append(vg);
 	return {yy::parser::token::R,v};
 }
 trailer {
 	return yy::parser::token::TRAILER;
 }
-<objBodyState,trailerState>null {
+null {
 	return yy::parser::token::PDNULL;
 }
-<objBodyState>endobj {
-	yy_pop_state();
+endobj {
 	return yy::parser::token::ENDOBJ;
 }
-<INITIAL,xrefState>{Nat} {
-	return {yy::parser::token::NAT,{yytext,yytext+yyleng}};
-}
+
 {Int}{Space}+{Int}{Space}+obj {
-	yy_push_state(objBodyState);
 	std::size_t num,gen;
 	unpack(std::string(yytext,yyleng),num,gen);
 	Json::Value obj;
@@ -130,10 +124,10 @@ trailer {
 	obj["id"][1]=gen;
 	return {yy::parser::token::OBJ,obj};
 }
-<objBodyState,trailerState>true {
+true {
 	return {yy::parser::token::TRUE_,true};
 }
-<objBodyState,trailerState>false {
+false {
 	return {yy::parser::token::FALSE_,false};
 }
 startxref {
@@ -143,24 +137,50 @@ xref {
 	yy_push_state(xrefState);
 	return yy::parser::token::XREF;
 }
-<xrefState>f {
-	return yy::parser::token::F;
+
+<xrefState>{Nat}{Space}+{Nat} {
+	std::size_t start,length;
+	unpack({yytext,yyleng},start,length);
+	Json::Value v;
+	v.append(start);
+	v.append(length);
+	return {yy::parser::token::HEADER,v};
 }
-<xrefState>n {
-	return yy::parser::token::N;
+
+<xrefState>{digit}{10}{Space}+{digit}{5}{Space}+f {
+	std::string offset,gen,fn;
+	unpack({yytext,yyleng},offset,gen,fn);
+	Json::Value v;
+	v.append(offset);
+	v.append(gen);
+	v.append(fn);
+	return {yy::parser::token::F,v};
 }
-<objBodyState,trailerState>{Int}   {
+<xrefState>{digit}{10}{Space}+{digit}{5}{Space}+n {
+	std::string offset,gen,fn;
+	unpack({yytext,yyleng},offset,gen,fn);
+	Json::Value v;
+	v.append(offset);
+	v.append(gen);
+	v.append(fn);
+	return {yy::parser::token::N,v};
+}
+<xrefState>. {
+	yyless(0);
+	yy_pop_state();
+}
+{Int}   {
 	return {yy::parser::token::INTEGER,convertAs<long long>({yytext,yyleng})};
 }
-<objBodyState,trailerState>{Real}     {
+{Real}     {
 	return {yy::parser::token::REAL,convertAs<double>({yytext,yyleng})};
 }
 
-<objBodyState,trailerState>{Name} {
+{Name} {
 	return {yy::parser::token::NAME,{yytext+1,yytext+yyleng}};
 }
 
-<objBodyState>stream{CrLf}? {
+stream{CrLf}? {
 	yy_push_state(streamState);
 	buffer.str("");
 }
