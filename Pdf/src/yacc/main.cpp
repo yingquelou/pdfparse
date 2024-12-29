@@ -1,5 +1,8 @@
-#include "pdfObjects.h"
 #include "pch.h"
+#include <fstream>
+#include <sstream>
+#include <iterator>
+#include <filesystem>
 int main(int argc, char const *argv[])
 {
   for (size_t i = 1; argv[i]; i++)

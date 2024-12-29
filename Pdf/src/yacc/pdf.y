@@ -1,6 +1,9 @@
 %{
 #include "pdf.config.h"
 #include <iostream>
+#include <fstream>
+extern std::size_t num,gen;
+extern std::size_t f_index;
 %}
 %no-lines
 //%debug
@@ -15,10 +18,9 @@
 %code top {
 }
 /* %skeleton "glr.c" */
-/* %destructor {json_decref($$);} <obj>  */
-%token <Json::Value> FALSE_ TRUE_ NAT
+%token <Json::Value> FALSE_ TRUE_
 %token <Json::Value> STRING XSTRING NAME 
-%token <Json::Value> OBJ R STREAM F N HEADER
+%token <Json::Value> OBJ R F N HEADER STREAM
 %token <Json::Value> INTEGER PDNULL REAL
 /* 关键字 */
 %token LD RD ENDOBJ  XREF TRAILER STARTXREF La Ra
@@ -31,17 +33,42 @@
 pdf: pDocument {};
 
 pDocument:
-|pDocument pdSection ;
+|pDocument pdSection {
+    // std::cout<<$2;
+};
 
-pdSection: pdObj 
-|xref
-|trailer{
-    std::cout<<$1;
+pdSection: pdObj {
+    $$=$1;
+
+    std::stringstream ss;
+    ss<<"obj_"<< num<<'_'<<gen<<'_'<<f_index++<<".json";
+    std::ofstream ofs(ss.str(),std::ofstream::binary);
+    ofs<<$$;
+}
+|xref {
+    $$=$1;
+
+    std::stringstream ss;
+    ss<<"xref_"<<f_index++<<".json";
+    std::ofstream ofs(ss.str(),std::ofstream::binary);
+    ofs<<$$;
+}
+|trailer {
+    $$=$1;
+
+    std::stringstream ss;
+    ss<<"trailer_"<<f_index++<<".json";
+    std::ofstream ofs(ss.str(),std::ofstream::binary);
+    ofs<<$$;
 }
 |startxref{
-    std::cout<<$1;
-}
-;
+    $$=$1;
+
+    std::stringstream ss;
+    ss<<"startxref_"<<f_index++<<".json";
+    std::ofstream ofs(ss.str(),std::ofstream::binary);
+    ofs<<$$;
+};
 
 xref:XREF xrefs {
     $$=$2;
@@ -67,7 +94,7 @@ $$=std::move($1);
 subXrefEntry:F 
 |N;
 
-startxref: STARTXREF INTEGER {$$=$2;};
+startxref: STARTXREF INTEGER {$$["startxref"]=$2;};
 
 pdObj: OBJ objs ENDOBJ {
     $1["body"]=$2;

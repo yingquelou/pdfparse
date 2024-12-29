@@ -1,12 +1,7 @@
 # set(CMAKE_TOOLCHAIN_FILE $ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
 cmake_minimum_required(VERSION 3.10)
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 11)
 project(test LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-set(TARGEOUT ${CMAKE_BINARY_DIR})
-set(LIBRARY_OUTPUT_PATH ${TARGEOUT}/bin)
-set(EXECUTABLE_OUTPUT_PATH ${TARGEOUT}/bin)
 add_executable(${PROJECT_NAME} test.cpp)
 add_subdirectory(Pdf)

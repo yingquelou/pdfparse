@@ -1,30 +1,20 @@
 %{
-#define BISON_YACC
 #include "utils.hpp"
+// #define ECHO std::cout << "ign" << yytext <<'\n'
+#define BISON_YACC
 #include "pdf.config.h"
 #include <string>
 #include <sstream>
-#include <iostream>
+#include <fstream>
 static std::stringstream buffer;
 static int parenthesis;
-static std::stack<yy_state_type> stateStack;
-#define yy_push_state(state)      \
-	do                            \
-	{                             \
-		stateStack.push(YYSTATE); \
-		BEGIN state;              \
-	} while (false)
-#define yy_pop_state()          \
-	do                          \
-	{                           \
-		BEGIN stateStack.top(); \
-		stateStack.pop();       \
-	} while (false)
+std::size_t f_index=0;
+std::size_t num,gen;
 %}
-%x streamState strState xstrState xrefState 
-%option noyywrap noline
+%option noline noyywrap stack
 /* debug */
 /* nodefault */
+%x streamState strState xstrState xrefState 
 La "["
 Ra "]"
 Ld "<<"
@@ -40,13 +30,12 @@ Lf \n
 CrLf {Cr}?{Lf}
 Name \/[^ \/\\\t\r\n\[\]\<\(\)\>]+
 Eol {Tab}*{CrLf}
-Space {Tab}|{CrLf}
+Space [[:space:]]
 %%
 
 %.* {}
-{CrLf} {
-}
-{Tab} {}
+<INITIAL,xstrState,xrefState>{Space} {}
+
 {Ld} {
 	return yy::parser::token::LD;
 }
@@ -64,7 +53,6 @@ Space {Tab}|{CrLf}
 	buffer.str("");
 }
 <xstrState>{xdigit} {buffer.write(yytext,yyleng);}
-<xstrState,xrefState>{Space} {}
 <xstrState>">" {
 	yy_pop_state();
 	auto&&s=buffer.str();
@@ -99,7 +87,7 @@ Space {Tab}|{CrLf}
 }
 {Nat}{Space}+{Nat}{Space}+R {
 	std::size_t num,gen;
-	unpack({yytext,yyleng},num,gen);
+	utils::unpack({yytext,yyleng},num,gen);
 	Json::Value vn(num),vg(gen);
 	Json::Value v;
 	v["R"].append(vn);
@@ -117,11 +105,10 @@ endobj {
 }
 
 {Int}{Space}+{Int}{Space}+obj {
-	std::size_t num,gen;
-	unpack(std::string(yytext,yyleng),num,gen);
+	utils::unpack(std::string(yytext,yyleng),num,gen);
 	Json::Value obj;
-	obj["id"][0]=num;
-	obj["id"][1]=gen;
+	obj["id"].append(num);
+	obj["id"].append(gen);
 	return {yy::parser::token::OBJ,obj};
 }
 true {
@@ -140,7 +127,7 @@ xref {
 
 <xrefState>{Nat}{Space}+{Nat} {
 	std::size_t start,length;
-	unpack({yytext,yyleng},start,length);
+	utils::unpack({yytext,yyleng},start,length);
 	Json::Value v;
 	v.append(start);
 	v.append(length);
@@ -149,7 +136,7 @@ xref {
 
 <xrefState>{digit}{10}{Space}+{digit}{5}{Space}+f {
 	std::string offset,gen,fn;
-	unpack({yytext,yyleng},offset,gen,fn);
+	utils::unpack({yytext,yyleng},offset,gen,fn);
 	Json::Value v;
 	v.append(offset);
 	v.append(gen);
@@ -158,7 +145,7 @@ xref {
 }
 <xrefState>{digit}{10}{Space}+{digit}{5}{Space}+n {
 	std::string offset,gen,fn;
-	unpack({yytext,yyleng},offset,gen,fn);
+	utils::unpack({yytext,yyleng},offset,gen,fn);
 	Json::Value v;
 	v.append(offset);
 	v.append(gen);
@@ -169,11 +156,12 @@ xref {
 	yyless(0);
 	yy_pop_state();
 }
+
 {Int}   {
-	return {yy::parser::token::INTEGER,convertAs<long long>({yytext,yyleng})};
+	return {yy::parser::token::INTEGER,utils::convertAs<long long>({yytext,yyleng})};
 }
 {Real}     {
-	return {yy::parser::token::REAL,convertAs<double>({yytext,yyleng})};
+	return {yy::parser::token::REAL,utils::convertAs<double>({yytext,yyleng})};
 }
 
 {Name} {
@@ -186,7 +174,14 @@ stream{CrLf}? {
 }
 <streamState>{CrLf}?endstream {
 	yy_pop_state();
-	return {yy::parser::token::STREAM,buffer.str()};
+	std::stringstream ss;
+	ss<<"obj_" << num<<'_'<<gen<<'_'<<f_index++<<".stream";
+	auto &&str=ss.str();
+	Json::Value v;
+	v["stream"]=str;
+	std::ofstream ofs(str,std::ofstream::binary);
+	ofs<<buffer.str();
+	return {yy::parser::token::STREAM, v};
 }
 <streamState>{Lf}|. {
 	buffer.write(yytext,yyleng);
