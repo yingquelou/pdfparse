@@ -1,2 +1,0 @@
-[requires]
-winflexbison/2.5.24

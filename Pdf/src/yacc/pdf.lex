@@ -1,8 +1,12 @@
+%top {
+#define NEED_YACC_HEADER
+#include <boost/json.hpp>
+#include "pdf.config.h"
+}
 %{
 #include "utils.hpp"
+namespace json=boost::json;
 // #define ECHO std::cout << "ign" << yytext <<'\n'
-#define BISON_YACC
-#include "pdf.config.h"
 #include <string>
 #include <sstream>
 #include <fstream>
@@ -55,8 +59,9 @@ Space [[:space:]]
 <xstrState>{xdigit} {buffer.write(yytext,yyleng);}
 <xstrState>">" {
 	yy_pop_state();
-	auto&&s=buffer.str();
-	return {yy::parser::token::XSTRING,"<"+s+">"};
+	auto&&s="<"+buffer.str()+">";
+	boost::json::string str(s.begin(),s.end());
+	return {yy::parser::token::XSTRING,str};
 }
 
 "(" {
@@ -76,8 +81,9 @@ Space [[:space:]]
 	if(--parenthesis==0)
 	{
 		yy_pop_state();
-		auto&&s=buffer.str();
-		return {yy::parser::token::STRING,'('+s+')'};
+		auto&&s='('+buffer.str()+')';
+	  	boost::json::string str(s.begin(),s.end());
+		return {yy::parser::token::STRING,str};
 	}
 	else
 		buffer.write(yytext,yyleng);
@@ -88,11 +94,10 @@ Space [[:space:]]
 {Nat}{Space}+{Nat}{Space}+R {
 	std::size_t num,gen;
 	utils::unpack({yytext,yyleng},num,gen);
-	Json::Value vn(num),vg(gen);
-	Json::Value v;
-	v["R"].append(vn);
-	v["R"].append(vg);
-	return {yy::parser::token::R,v};
+	boost::json::object obj({
+		{"R",{num,gen}}
+	});
+	return {yy::parser::token::R,obj};
 }
 trailer {
 	return yy::parser::token::TRAILER;
@@ -106,9 +111,9 @@ endobj {
 
 {Int}{Space}+{Int}{Space}+obj {
 	utils::unpack(std::string(yytext,yyleng),num,gen);
-	Json::Value obj;
-	obj["id"].append(num);
-	obj["id"].append(gen);
+	boost::json::object obj({
+		{"id",{num,gen}}
+	});
 	return {yy::parser::token::OBJ,obj};
 }
 true {
@@ -128,29 +133,25 @@ xref {
 <xrefState>{Nat}{Space}+{Nat} {
 	std::size_t start,length;
 	utils::unpack({yytext,yyleng},start,length);
-	Json::Value v;
-	v.append(start);
-	v.append(length);
-	return {yy::parser::token::HEADER,v};
+	boost::json::array arr({start,length});
+	return {yy::parser::token::HEADER,arr};
 }
 
 <xrefState>{digit}{10}{Space}+{digit}{5}{Space}+f {
 	std::string offset,gen,fn;
 	utils::unpack({yytext,yyleng},offset,gen,fn);
-	Json::Value v;
-	v.append(offset);
-	v.append(gen);
-	v.append(fn);
-	return {yy::parser::token::F,v};
+  	boost::json::array arr({
+		offset,gen,fn
+	});
+	return {yy::parser::token::F,arr};
 }
 <xrefState>{digit}{10}{Space}+{digit}{5}{Space}+n {
 	std::string offset,gen,fn;
 	utils::unpack({yytext,yyleng},offset,gen,fn);
-	Json::Value v;
-	v.append(offset);
-	v.append(gen);
-	v.append(fn);
-	return {yy::parser::token::N,v};
+	boost::json::array arr({
+		offset,gen,fn
+	});
+	return {yy::parser::token::N,arr};
 }
 <xrefState>. {
 	yyless(0);
@@ -165,7 +166,8 @@ xref {
 }
 
 {Name} {
-	return {yy::parser::token::NAME,{yytext+1,yytext+yyleng}};
+	boost::json::string str(yytext+1,yyleng-1);
+	return {yy::parser::token::NAME,str};
 }
 
 stream{CrLf}? {
@@ -177,11 +179,13 @@ stream{CrLf}? {
 	std::stringstream ss;
 	ss<<"obj_" << num<<'_'<<gen<<'_'<<f_index++<<".stream";
 	auto &&str=ss.str();
-	Json::Value v;
-	v["stream"]=str;
+
+	boost::json::object obj({
+		{"stream",str}
+	});
 	std::ofstream ofs(str,std::ofstream::binary);
 	ofs<<buffer.str();
-	return {yy::parser::token::STREAM, v};
+	return {yy::parser::token::STREAM, obj};
 }
 <streamState>{Lf}|. {
 	buffer.write(yytext,yyleng);

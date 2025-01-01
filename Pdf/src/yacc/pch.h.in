@@ -1,6 +1,6 @@
 #ifndef PCH_H
 #define PCH_H 1
-#include <json/json.h>
-#include "@BISON_YACC_HEADER@"
-#include "@BISON_FLEX_HEADER@"
+#define NEED_FLEX_HEADER
+#define NEED_YACC_HEADER
+#include "pdf.config.h"
 #endif

@@ -1,4 +1,3 @@
-add_link_options($<${MINGW}:-static>)
 block()
 file(GLOB PROJS *)
 foreach(ITEM IN LISTS PROJS)

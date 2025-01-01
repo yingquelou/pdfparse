@@ -1,14 +1,23 @@
-%{
+%code requires {
+#define NEED_FLEX_HEADER
+#define YY_DECL yy::parser::symbol_type yylex()
 #include "pdf.config.h"
+}
+%code {
+YY_DECL;
+}
+%{
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include<boost/json.hpp>
+namespace json=boost::json;
 extern std::size_t num,gen;
 extern std::size_t f_index;
 %}
 %no-lines
 //%debug
 /* %parse-param {int isSplit} */
-/* %parse-param {const char*savaAsJson} */
 /* %glr-parser */
 /* %skeleton "lalr1.cc"  */
 %language "c++"
@@ -18,19 +27,24 @@ extern std::size_t f_index;
 %code top {
 }
 /* %skeleton "glr.c" */
-%token <Json::Value> FALSE_ TRUE_
-%token <Json::Value> STRING XSTRING NAME 
-%token <Json::Value> OBJ R F N HEADER STREAM
-%token <Json::Value> INTEGER PDNULL REAL
+%token <bool> FALSE_ TRUE_
+%token <boost::json::string> STRING XSTRING NAME 
+%token <boost::json::value>  STREAM
+%token <boost::json::object> R OBJ
+%token <double> REAL
+%token <long long> INTEGER 
+%token <boost::json::array> HEADER F N
 /* 关键字 */
-%token LD RD ENDOBJ  XREF TRAILER STARTXREF La Ra
-%type <Json::Value> subXref xref pdSection xrefs 
-%type <Json::Value> pDocument trailer startxref subXrefEntries
-%type <Json::Value> pdObj array objs dict obj dictEntries subXrefEntry
+%token LD RD ENDOBJ  XREF TRAILER STARTXREF La Ra PDNULL
+%type <boost::json::value> pdSection obj
+%type <boost::json::object> trailer pdObj dictEntries dict subXref startxref
+%type <boost::json::array>  xref  xrefs 
+%type <boost::json::array> pDocument   subXrefEntries
+%type <boost::json::array>  array objs subXrefEntry
 %start pdf
 
 %%
-pdf: pDocument {};
+pdf: pDocument;
 
 pDocument:
 |pDocument pdSection {
@@ -71,66 +85,74 @@ pdSection: pdObj {
 };
 
 xref:XREF xrefs {
-    $$=$2;
+    $$=$xrefs;
 };
 xrefs:
 |xrefs subXref{
-    $1.append($2);
+    $1.emplace_back($subXref);
     $$=std::move($1);
 };
 
 subXref:
 HEADER subXrefEntries {
-    $$["header"]=$1;
-    $$["body"]=$2;
+    $$["header"]=$HEADER;
+    $$["body"]=$subXrefEntries;
 };
 
 subXrefEntries:
 |subXrefEntries subXrefEntry {
-$1.append($2);
-$$=std::move($1);
+    $1.emplace_back($subXrefEntry);
+    $$=std::move($1);
 };
 
 subXrefEntry:F 
 |N;
 
-startxref: STARTXREF INTEGER {$$["startxref"]=$2;};
+startxref: STARTXREF INTEGER {
+    $$["startxref"]=$2;
+};
 
 pdObj: OBJ objs ENDOBJ {
-    $1["body"]=$2;
+    $1["body"]=$objs;
     $$=std::move($1);
 };
 
 trailer:
-TRAILER dict {$$=$2;};
+TRAILER dict {
+    $$=$dict;
+};
 
-obj:PDNULL 
-|STREAM
-|R 
-|array 
-|dict
-|TRUE_ 
-|FALSE_ 
-|INTEGER
-|REAL 
-|STRING 
-|XSTRING
-|NAME
+obj:PDNULL {}
+|STREAM {$$=std::move($1);}
+|R {$$=std::move($1);}
+|array {$$=std::move($1);}
+|dict {$$=std::move($1);}
+|TRUE_ {$$=std::move($1);}
+|FALSE_ {$$=std::move($1);}
+|INTEGER {$$=std::move($1);}
+|REAL {$$=std::move($1);}
+|STRING {$$=std::move($1);}
+|XSTRING {$$=std::move($1);}
+|NAME {$$=std::move($1);}
 ;
 
-array: La objs Ra {$$=std::move($2);};
+array: La objs Ra {
+    $$=std::move($objs);
+};
 
-dict: LD dictEntries RD {$$=std::move($2);};
+dict: LD dictEntries RD {
+    $$=std::move($dictEntries);
+};
 
 dictEntries: 
 |dictEntries NAME obj {
-    $1[$2.asString()]=$3;
+    $1[$NAME]=$obj;
     $$=std::move($1);
 };
 
-objs: {}
+objs: 
 |objs obj {
-    $1.append($2);
+    $1.emplace_back($obj);
     $$=std::move($1);
 };
 %%

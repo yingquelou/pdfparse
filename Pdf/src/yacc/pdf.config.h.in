@@ -1,8 +1,9 @@
 #ifndef PDF_CONFIG_H
 #define PDF_CONFIG_H 1
-// #include"@BISON_FLEX_HEADER@"
-#include <json/json.h>
-#include"@BISON_YACC_HEADER@"
-#define YY_DECL yy::parser::symbol_type yylex()
-YY_DECL;
+#ifdef NEED_FLEX_HEADER
+#include "@BISON_FLEX_HEADER@"
+#endif
+#ifdef NEED_YACC_HEADER
+#include "@BISON_YACC_HEADER@"
+#endif
 #endif
