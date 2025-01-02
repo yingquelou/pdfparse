@@ -1,7 +1,12 @@
+%code top {
+}
 %code requires {
+#include <boost/json.hpp>
 #define NEED_FLEX_HEADER
-#define YY_DECL yy::parser::symbol_type yylex()
+#define YY_DECL yy::parser::symbol_type yylex(yyscan_t yyscanner)
 #include "pdf.config.h"
+}
+%code provides {
 }
 %code {
 YY_DECL;
@@ -17,7 +22,8 @@ extern std::size_t f_index;
 %}
 %no-lines
 //%debug
-/* %parse-param {int isSplit} */
+%lex-param {yyscan_t yyscanner}
+%parse-param {yyscan_t yyscanner}
 /* %glr-parser */
 /* %skeleton "lalr1.cc"  */
 %language "c++"

@@ -1,9 +1,12 @@
 %top {
-#define NEED_YACC_HEADER
-#include <boost/json.hpp>
-#include "pdf.config.h"
+#include <string>
+#define YY_EXTRA_TYPE std::string
 }
 %{
+#define NEED_YACC_HEADER
+#include <boost/json.hpp>
+#include <boost/filesystem.hpp>
+#include "pdf.config.h"
 #include "utils.hpp"
 namespace json=boost::json;
 // #define ECHO std::cout << "ign" << yytext <<'\n'
@@ -15,7 +18,7 @@ static int parenthesis;
 std::size_t f_index=0;
 std::size_t num,gen;
 %}
-%option noline noyywrap stack
+%option noline noyywrap stack reentrant
 /* debug */
 /* nodefault */
 %x streamState strState xstrState xrefState 
@@ -53,12 +56,12 @@ Space [[:space:]]
 	return yy::parser::token::Ra;
 }
 "<" {
-	yy_push_state(xstrState);
+	yy_push_state(xstrState,yyscanner);
 	buffer.str("");
 }
 <xstrState>{xdigit} {buffer.write(yytext,yyleng);}
 <xstrState>">" {
-	yy_pop_state();
+	yy_pop_state(yyscanner);
 	auto&&s="<"+buffer.str()+">";
 	boost::json::string str(s.begin(),s.end());
 	return {yy::parser::token::XSTRING,str};
@@ -67,7 +70,7 @@ Space [[:space:]]
 "(" {
 	parenthesis=1;
 	buffer.str("");
-	yy_push_state(strState);
+	yy_push_state(strState,yyscanner);
 }
 <strState>\\{Eol} {}
 <strState>\\(D{1,3}|[()nrtbf\\]) {
@@ -80,7 +83,7 @@ Space [[:space:]]
 <strState>")" {
 	if(--parenthesis==0)
 	{
-		yy_pop_state();
+		yy_pop_state(yyscanner);
 		auto&&s='('+buffer.str()+')';
 	  	boost::json::string str(s.begin(),s.end());
 		return {yy::parser::token::STRING,str};
@@ -126,7 +129,7 @@ startxref {
 return yy::parser::token::STARTXREF;
 }
 xref {
-	yy_push_state(xrefState);
+	yy_push_state(xrefState,yyscanner);
 	return yy::parser::token::XREF;
 }
 
@@ -155,7 +158,7 @@ xref {
 }
 <xrefState>. {
 	yyless(0);
-	yy_pop_state();
+	yy_pop_state(yyscanner);
 }
 
 {Int}   {
@@ -171,14 +174,15 @@ xref {
 }
 
 stream{CrLf}? {
-	yy_push_state(streamState);
+	yy_push_state(streamState,yyscanner);
 	buffer.str("");
 }
 <streamState>{CrLf}?endstream {
-	yy_pop_state();
+	yy_pop_state(yyscanner);
 	std::stringstream ss;
 	ss<<"obj_" << num<<'_'<<gen<<'_'<<f_index++<<".stream";
-	auto &&str=ss.str();
+	boost::filesystem::path p(yyget_extra(yyscanner));
+	auto &&str=p.append(ss.str()).generic_string();
 
 	boost::json::object obj({
 		{"stream",str}
