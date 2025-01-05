@@ -15,6 +15,7 @@ YY_DECL;
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <boost/filesystem.hpp>
 #include<boost/json.hpp>
 namespace json=boost::json;
 extern std::size_t num,gen;
@@ -25,14 +26,13 @@ extern std::size_t f_index;
 %lex-param {yyscan_t yyscanner}
 %parse-param {yyscan_t yyscanner}
 /* %glr-parser */
-/* %skeleton "lalr1.cc"  */
 %language "c++"
 %define api.token.constructor
 %define api.value.type variant
 /* %define parse.assert */
+// %locations
 %code top {
 }
-/* %skeleton "glr.c" */
 %token <bool> FALSE_ TRUE_
 %token <boost::json::string> STRING XSTRING NAME 
 %token <boost::json::value>  STREAM
@@ -62,7 +62,9 @@ pdSection: pdObj {
 
     std::stringstream ss;
     ss<<"obj_"<< num<<'_'<<gen<<'_'<<f_index++<<".json";
-    std::ofstream ofs(ss.str(),std::ofstream::binary);
+    boost::filesystem::path p(yyget_extra(yyscanner)->dir);
+	auto &&str=p.append(ss.str()).generic_string();
+    std::ofstream ofs(str,std::ofstream::binary);
     ofs<<$$;
 }
 |xref {
@@ -70,7 +72,9 @@ pdSection: pdObj {
 
     std::stringstream ss;
     ss<<"xref_"<<f_index++<<".json";
-    std::ofstream ofs(ss.str(),std::ofstream::binary);
+    boost::filesystem::path p(yyget_extra(yyscanner)->dir);
+	auto &&str=p.append(ss.str()).generic_string();
+    std::ofstream ofs(str,std::ofstream::binary);
     ofs<<$$;
 }
 |trailer {
@@ -78,7 +82,9 @@ pdSection: pdObj {
 
     std::stringstream ss;
     ss<<"trailer_"<<f_index++<<".json";
-    std::ofstream ofs(ss.str(),std::ofstream::binary);
+    boost::filesystem::path p(yyget_extra(yyscanner)->dir);
+	auto &&str=p.append(ss.str()).generic_string();
+    std::ofstream ofs(str,std::ofstream::binary);
     ofs<<$$;
 }
 |startxref{
@@ -86,7 +92,9 @@ pdSection: pdObj {
 
     std::stringstream ss;
     ss<<"startxref_"<<f_index++<<".json";
-    std::ofstream ofs(ss.str(),std::ofstream::binary);
+    boost::filesystem::path p(yyget_extra(yyscanner)->dir);
+	auto &&str=p.append(ss.str()).generic_string();
+    std::ofstream ofs(str,std::ofstream::binary);
     ofs<<$$;
 };
 

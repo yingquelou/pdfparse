@@ -1,6 +1,11 @@
 %top {
 #include <string>
-#define YY_EXTRA_TYPE std::string
+typedef struct shared_data
+{
+	std::string dir;
+} shared_data;
+
+#define YY_EXTRA_TYPE shared_data *
 }
 %{
 #define NEED_YACC_HEADER
@@ -19,6 +24,7 @@ std::size_t f_index=0;
 std::size_t num,gen;
 %}
 %option noline noyywrap stack reentrant
+/* bison-bridge bison-locations */
 /* debug */
 /* nodefault */
 %x streamState strState xstrState xrefState 
@@ -39,6 +45,9 @@ Name \/[^ \/\\\t\r\n\[\]\<\(\)\>]+
 Eol {Tab}*{CrLf}
 Space [[:space:]]
 %%
+%{
+	// jpdsf
+%}
 
 %.* {}
 <INITIAL,xstrState,xrefState>{Space} {}
@@ -181,9 +190,8 @@ stream{CrLf}? {
 	yy_pop_state(yyscanner);
 	std::stringstream ss;
 	ss<<"obj_" << num<<'_'<<gen<<'_'<<f_index++<<".stream";
-	boost::filesystem::path p(yyget_extra(yyscanner));
+	boost::filesystem::path p(yyget_extra(yyscanner)->dir);
 	auto &&str=p.append(ss.str()).generic_string();
-
 	boost::json::object obj({
 		{"stream",str}
 	});
