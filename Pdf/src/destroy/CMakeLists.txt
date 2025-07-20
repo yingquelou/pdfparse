@@ -1,5 +1,5 @@
 cmake_path(GET CMAKE_CURRENT_LIST_DIR STEM PROJ)
 file(GLOB READSRC *.c)
-include_directories(${HEADPATH})
 add_library(${PROJ} ${SHARED} ${READSRC})
 target_link_libraries(${PROJ} list)
+include_directories(${HEADPATH})
